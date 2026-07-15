@@ -32,7 +32,9 @@ type GeoIPLookup interface {
 }
 
 // GeoIPResult is a subset of geoip.LookupResult local to this package
-// to avoid a circular dependency.
+// to avoid a circular dependency. ASN/Organization are only populated
+// when the local GeoLite2-ASN database is available; a zero ASN means
+// the caller should fall back to a remote source (IPinfo/ipapi.is).
 type GeoIPResult struct {
 	CountryCode   string
 	CountryName   string
@@ -43,6 +45,8 @@ type GeoIPResult struct {
 	Continent     string
 	ContinentCode string
 	PostalCode    string
+	ASN           uint
+	Organization  string
 }
 
 // APIKeys holds optional API keys for commercial data sources. Sources

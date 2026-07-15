@@ -71,3 +71,50 @@ func TestParseIPinfoLiveResponse(t *testing.T) {
 		t.Fatalf("live parse produced empty Info: ok=%v %+v", ok, r)
 	}
 }
+
+// TestToJSONGeoIPFallsBackToIpapiASNOrg is a regression test for a bug
+// where enabling GeoIP (mmdb-city, which has no ASN data) permanently
+// blanked ASN/Org instead of falling back to ipapi.is when the IPinfo
+// ASN/Org lookup also failed (e.g. rate-limited). ToJSON must still
+// surface ipapi.is's ASN/Org whenever IPinfo's are empty, regardless of
+// why they're empty.
+func TestToJSONGeoIPFallsBackToIpapiASNOrg(t *testing.T) {
+	r := InfoResult{
+		IPinfoOK: true, // set by the GeoIP branch in queryInfo
+		// IPinfoASN/IPinfoOrg intentionally left empty, simulating a
+		// failed (or not-yet-run) IPinfo ASN/Org lookup.
+		IPinfoCity:        "Tokyo",
+		IPinfoCountryCode: "JP",
+		IpapiOK:           true,
+		IpapiASN:          "AS2516",
+		IpapiOrg:          "KDDI CORPORATION",
+	}
+	info := r.ToJSON()
+	if info.ASN == nil || *info.ASN != "AS2516" {
+		t.Errorf("ASN: got %v, want AS2516", info.ASN)
+	}
+	if info.Organization == nil || *info.Organization != "KDDI CORPORATION" {
+		t.Errorf("Organization: got %v, want KDDI CORPORATION", info.Organization)
+	}
+}
+
+// TestToJSONPrefersIPinfoASNOrgOverIpapi ensures that when the IPinfo
+// ASN/Org lookup does succeed (the common case after the fix in
+// queryInfo), it takes priority over the ipapi.is fallback.
+func TestToJSONPrefersIPinfoASNOrgOverIpapi(t *testing.T) {
+	r := InfoResult{
+		IPinfoOK:  true,
+		IPinfoASN: "AS4713",
+		IPinfoOrg: "NTT Communications",
+		IpapiOK:   true,
+		IpapiASN:  "AS2516",
+		IpapiOrg:  "KDDI CORPORATION",
+	}
+	info := r.ToJSON()
+	if info.ASN == nil || *info.ASN != "AS4713" {
+		t.Errorf("ASN: got %v, want AS4713 (IPinfo should take priority)", info.ASN)
+	}
+	if info.Organization == nil || *info.Organization != "NTT Communications" {
+		t.Errorf("Organization: got %v, want NTT Communications (IPinfo should take priority)", info.Organization)
+	}
+}

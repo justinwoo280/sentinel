@@ -97,12 +97,17 @@ type ScheduleConfig struct {
 	Jitter   Duration `yaml:"jitter"`
 }
 
-// GeoIPConfig controls Maxmind mmdb download and updates.
+// GeoIPConfig controls Maxmind mmdb download and updates. Both the
+// City (location) and ASN (autonomous system number + organization)
+// databases are downloaded when enabled — ASN is optional and degrades
+// gracefully (callers fall back to IPinfo/ipapi.is) if it can't be
+// downloaded or opened.
 type GeoIPConfig struct {
 	Enabled        bool     `yaml:"enabled"`
 	AccountID      string   `yaml:"account_id"` // Maxmind Account ID (Basic Auth username)
 	LicenseKey     string   `yaml:"license_key"`
-	DBPath         string   `yaml:"db_path"`
+	DBPath         string   `yaml:"db_path"`     // GeoLite2-City .mmdb
+	ASNDBPath      string   `yaml:"asn_db_path"` // GeoLite2-ASN .mmdb
 	UpdateInterval Duration `yaml:"update_interval"`
 	DownloadURL    string   `yaml:"download_url"`
 }
@@ -145,6 +150,7 @@ func DefaultAgent() AgentConfig {
 		GeoIP: GeoIPConfig{
 			Enabled:        true,
 			DBPath:         "/var/lib/sentinel/GeoLite2-City.mmdb",
+			ASNDBPath:      "/var/lib/sentinel/GeoLite2-ASN.mmdb",
 			UpdateInterval: Duration(24 * time.Hour),
 		},
 	}

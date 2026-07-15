@@ -161,9 +161,17 @@ Manage everything else from the Telegram bot (`/start`).
 
 ## GeoIP (MaxMind GeoLite2) database
 
-The agent downloads and refreshes a local MaxMind GeoLite2-City database
-(`internal/geoip`) to enrich the quality module's Info section (ASN,
-organization, coordinates) without depending on remote APIs.
+The agent downloads and refreshes two local MaxMind GeoLite2 databases
+(`internal/geoip`) to enrich the quality module's Info section without
+depending on remote APIs:
+
+- **GeoLite2-City** — country/region/city, coordinates, timezone, postal code
+- **GeoLite2-ASN** — autonomous system number + organization (not included
+  in City)
+
+Both are free with a MaxMind account. The ASN database is optional: if it
+fails to download or has no entry for a given IP, ASN/Organization fall
+back to IPinfo, then ipapi.is, instead of being permanently blank.
 
 MaxMind's [current download endpoint](https://dev.maxmind.com/geoip/updating-databases)
 requires **HTTP Basic Authentication** using your **Account ID** as the
@@ -180,6 +188,7 @@ geoip:
   account_id: ""    # MaxMind Account ID
   license_key: ""   # MaxMind License Key
   db_path: /var/lib/sentinel/GeoLite2-City.mmdb
+  asn_db_path: /var/lib/sentinel/GeoLite2-ASN.mmdb
   update_interval: 24h
 ```
 
@@ -188,8 +197,8 @@ Find both values at
 (sign up for a free GeoLite2 account at
 [https://www.maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup)
 if you don't have one). Both `account_id` and `license_key` must be set
-together — without them, GeoIP downloads are skipped and the quality
-module falls back to free IP-info sources.
+together — without them, GeoIP downloads are skipped entirely and the
+quality module falls back to free IP-info sources for everything.
 
 ## IP quality API keys
 

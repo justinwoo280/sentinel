@@ -12,18 +12,24 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
-// Manager handles the mmdb lifecycle: ensure the database exists,
-// open it for lookups, and refresh it daily.
+// Manager handles the mmdb lifecycle for both the City and ASN
+// databases: ensure they exist, open them for lookups, and refresh
+// them daily. The ASN database is optional — if it fails to download
+// or open, City lookups still work; only ASN/Organization are omitted
+// (callers fall back to remote sources in that case).
 type Manager struct {
-	cfg    Config
-	log    *slog.Logger
-	mu     sync.RWMutex
-	reader *geoip2.Reader
-	dbPath string
+	cfg       Config
+	log       *slog.Logger
+	mu        sync.RWMutex
+	reader    *geoip2.Reader
+	asnReader *geoip2.Reader
+	dbPath    string
+	asnDBPath string
 }
 
-// NewManager creates a Manager. If the database file exists, it's
-// opened immediately. If not, an initial download is attempted.
+// NewManager creates a Manager. If the database files exist, they're
+// opened immediately. If not, an initial download is attempted for
+// each (independently — a failure on one doesn't block the other).
 func NewManager(cfg Config, log *slog.Logger) (*Manager, error) {
 	if log == nil {
 		log = slog.Default()
@@ -31,34 +37,54 @@ func NewManager(cfg Config, log *slog.Logger) (*Manager, error) {
 	if cfg.DBPath == "" {
 		cfg.DBPath = DefaultConfig().DBPath
 	}
+	if cfg.ASNDBPath == "" {
+		cfg.ASNDBPath = DefaultConfig().ASNDBPath
+	}
 	if cfg.UpdateInterval == 0 {
 		cfg.UpdateInterval = 24 * time.Hour
 	}
 
 	m := &Manager{
-		cfg:    cfg,
-		log:    log,
-		dbPath: cfg.DBPath,
+		cfg:       cfg,
+		log:       log,
+		dbPath:    cfg.DBPath,
+		asnDBPath: cfg.ASNDBPath,
 	}
 
-	// Try to open existing database.
+	// City database (primary — required for location fields). Try to
+	// open an existing file first regardless of cfg.Enabled (so a
+	// previously-downloaded db still works if GeoIP is later disabled);
+	// only attempt a fresh download when enabled.
 	if err := m.open(); err != nil {
 		if !cfg.Enabled {
 			log.Info("geoip disabled, skipping database download")
 			return m, nil
 		}
-		// Database doesn't exist — try initial download.
-		log.Info("geoip database not found, attempting initial download")
+		log.Info("geoip city database not found, attempting initial download")
 		if err := m.downloadAndUpdate(context.Background()); err != nil {
-			log.Warn("initial geoip download failed", "err", err)
-			return m, nil // return manager anyway; lookups will return nil
+			log.Warn("initial geoip city download failed", "err", err)
+			// continue anyway; lookups will return nil
 		}
+	}
+
+	// ASN database (optional — adds ASN/Organization, absent from City).
+	if cfg.Enabled {
+		if err := m.openASN(); err != nil {
+			log.Info("geoip asn database not found, attempting initial download")
+			if err := m.downloadAndUpdateASN(context.Background()); err != nil {
+				log.Warn("initial geoip asn download failed", "err", err)
+				// continue anyway; ASN/Org lookups will be empty and
+				// callers fall back to remote sources (IPinfo/ipapi.is)
+			}
+		}
+	} else {
+		_ = m.openASN() // best-effort: use existing file if present
 	}
 
 	return m, nil
 }
 
-// open opens the mmdb file for lookups.
+// open opens the City mmdb file for lookups.
 func (m *Manager) open() error {
 	if !fileExists(m.dbPath) {
 		return fmt.Errorf("geoip: database not found at %s", m.dbPath)
@@ -82,8 +108,32 @@ func (m *Manager) open() error {
 	return nil
 }
 
-// downloadAndUpdate downloads a fresh copy and atomically replaces
-// the database, then reopens it.
+// openASN opens the ASN mmdb file for lookups.
+func (m *Manager) openASN() error {
+	if !fileExists(m.asnDBPath) {
+		return fmt.Errorf("geoip: asn database not found at %s", m.asnDBPath)
+	}
+
+	reader, err := geoip2.Open(m.asnDBPath)
+	if err != nil {
+		return fmt.Errorf("geoip: open asn database: %w", err)
+	}
+
+	m.mu.Lock()
+	oldReader := m.asnReader
+	m.asnReader = reader
+	m.mu.Unlock()
+
+	if oldReader != nil {
+		oldReader.Close()
+	}
+
+	m.log.Info("geoip asn database opened", "path", m.asnDBPath)
+	return nil
+}
+
+// downloadAndUpdate downloads a fresh City database and atomically
+// replaces it, then reopens it.
 func (m *Manager) downloadAndUpdate(ctx context.Context) error {
 	result, err := Download(ctx, m.cfg)
 	if err != nil {
@@ -92,13 +142,25 @@ func (m *Manager) downloadAndUpdate(ctx context.Context) error {
 	m.log.Info("geoip database updated",
 		"sha256", result.SHA256[:16], "size", result.Size)
 
-	// Reopen the database.
 	return m.open()
 }
 
+// downloadAndUpdateASN downloads a fresh ASN database and atomically
+// replaces it, then reopens it.
+func (m *Manager) downloadAndUpdateASN(ctx context.Context) error {
+	result, err := DownloadASN(ctx, m.cfg)
+	if err != nil {
+		return err
+	}
+	m.log.Info("geoip asn database updated",
+		"sha256", result.SHA256[:16], "size", result.Size)
+
+	return m.openASN()
+}
+
 // StartRefreshLoop launches a background goroutine that checks for
-// database updates at the configured interval. Blocks until ctx is
-// cancelled (should be called in a goroutine).
+// database updates (City and ASN) at the configured interval. Blocks
+// until ctx is cancelled (should be called in a goroutine).
 func (m *Manager) StartRefreshLoop(ctx context.Context) {
 	if !m.cfg.Enabled {
 		return
@@ -115,16 +177,21 @@ func (m *Manager) StartRefreshLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			m.log.Debug("geoip: checking for database update")
+			m.log.Debug("geoip: checking for database updates")
 			if err := m.downloadAndUpdate(ctx); err != nil {
-				m.log.Warn("geoip: daily update failed", "err", err)
+				m.log.Warn("geoip: daily city update failed", "err", err)
+			}
+			if err := m.downloadAndUpdateASN(ctx); err != nil {
+				m.log.Warn("geoip: daily asn update failed", "err", err)
 			}
 		}
 	}
 }
 
 // LookupResult holds the city/region/country/continent/coordinates/
-// timezone info returned by a mmdb lookup.
+// timezone/ASN info returned by a mmdb lookup. ASN/Organization are
+// only populated when the GeoLite2-ASN database is available; check
+// ASN != 0 before using them.
 type LookupResult struct {
 	CountryCode   string
 	CountryName   string
@@ -141,11 +208,16 @@ type LookupResult struct {
 	Organization  string
 }
 
-// Lookup performs a GeoIP city lookup. Returns nil if the database
-// is not loaded or the IP is not found.
+// Lookup performs a GeoIP lookup, combining the City database (location)
+// with the ASN database (autonomous system number + organization) when
+// both are available. Returns nil if the City database is not loaded
+// or the IP is not found there; ASN/Organization are left zero-valued
+// if the ASN database is unavailable or has no entry for the IP — the
+// caller should fall back to a remote source in that case.
 func (m *Manager) Lookup(ipStr string) *LookupResult {
 	m.mu.RLock()
 	reader := m.reader
+	asnReader := m.asnReader
 	m.mu.RUnlock()
 
 	if reader == nil {
@@ -179,38 +251,55 @@ func (m *Manager) Lookup(ipStr string) *LookupResult {
 		result.RegionName = record.Subdivisions[0].Names["en"]
 	}
 
+	if asnReader != nil {
+		if asn, err := asnReader.ASN(ip); err == nil && asn.AutonomousSystemNumber != 0 {
+			result.ASN = asn.AutonomousSystemNumber
+			result.Organization = asn.AutonomousSystemOrganization
+		}
+	}
+
 	return result
 }
 
-// LookupASN performs a GeoIP ASN lookup (requires GeoLite2-ASN database;
-// not supported with City-only database — returns nil gracefully).
-func (m *Manager) LookupASN(ipStr string) *LookupResult {
-	return m.Lookup(ipStr) // City db has no ASN; use separate ASN db if needed
-}
-
-// IsAvailable reports whether the database is loaded and ready.
+// IsAvailable reports whether the City database is loaded and ready.
 func (m *Manager) IsAvailable() bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.reader != nil
 }
 
-// Close closes the database reader.
+// IsASNAvailable reports whether the ASN database is loaded and ready.
+func (m *Manager) IsASNAvailable() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.asnReader != nil
+}
+
+// Close closes both database readers.
 func (m *Manager) Close() {
 	m.mu.Lock()
 	if m.reader != nil {
 		m.reader.Close()
 		m.reader = nil
 	}
+	if m.asnReader != nil {
+		m.asnReader.Close()
+		m.asnReader = nil
+	}
 	m.mu.Unlock()
 }
 
-// DBPath returns the configured database path.
+// DBPath returns the configured City database path.
 func (m *Manager) DBPath() string {
 	return m.dbPath
 }
 
-// DBInfo returns database file info (size, modtime).
+// ASNDBPath returns the configured ASN database path.
+func (m *Manager) ASNDBPath() string {
+	return m.asnDBPath
+}
+
+// DBInfo returns City database file info (size, modtime).
 func (m *Manager) DBInfo() (size int64, modTime time.Time, exists bool) {
 	info, err := os.Stat(m.dbPath)
 	if err != nil {

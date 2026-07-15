@@ -88,6 +88,7 @@ func New(cfg config.AgentConfig, cfgPath string, log *slog.Logger) (*Agent, erro
 			AccountID:      cfg.GeoIP.AccountID,
 			LicenseKey:     cfg.GeoIP.LicenseKey,
 			DBPath:         cfg.GeoIP.DBPath,
+			ASNDBPath:      cfg.GeoIP.ASNDBPath,
 			UpdateInterval: time.Duration(cfg.GeoIP.UpdateInterval),
 			DownloadURL:    cfg.GeoIP.DownloadURL,
 		}, log.With("module", "geoip"))
@@ -239,6 +240,8 @@ func (g *geoipAdapter) Lookup(ip string) *quality.GeoIPResult {
 		Continent:     r.Continent,
 		ContinentCode: r.ContinentCode,
 		PostalCode:    r.PostalCode,
+		ASN:           r.ASN,
+		Organization:  r.Organization,
 	}
 }
 

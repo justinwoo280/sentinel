@@ -41,11 +41,15 @@ type InfoResult struct {
 func (q *Quality) queryInfo(ctx context.Context) InfoResult {
 	var result InfoResult
 
-	// If GeoIP (local Maxmind mmdb) is available, use it as primary source.
+	// If GeoIP (local Maxmind mmdb) is available, use it as primary
+	// source for both location and ASN/Org. GeoLite2-City alone doesn't
+	// include ASN/organization data — that comes from the separate
+	// GeoLite2-ASN database (also downloaded when GeoIP is enabled; see
+	// internal/geoip). If the ASN database wasn't available or has no
+	// entry for this IP, fall back to IPinfo, then ipapi.is, instead of
+	// leaving ASN/Org permanently N/A.
 	if q.geoip != nil {
 		if gr := q.geoip.Lookup(q.ip); gr != nil {
-			result.IPinfoASN = ""
-			result.IPinfoOrg = ""
 			result.IPinfoLat = fmt.Sprintf("%.4f", gr.Latitude)
 			result.IPinfoLon = fmt.Sprintf("%.4f", gr.Longitude)
 			result.IPinfoCity = gr.CityName
@@ -58,7 +62,21 @@ func (q *Quality) queryInfo(ctx context.Context) InfoResult {
 			result.IPinfoRegCountry = gr.CountryName
 			result.IPinfoOK = true
 
+			if gr.ASN != 0 {
+				// Local GeoLite2-ASN database had this IP — no need to
+				// call out to a remote source.
+				result.IPinfoASN = fmt.Sprintf("AS%d", gr.ASN)
+				result.IPinfoOrg = gr.Organization
+			} else if asn, org, ok := q.fetchIPinfoASNOrg(ctx); ok {
+				// ASN database unavailable or IP not found there — fetch
+				// ASN/Org from IPinfo without letting it clobber the
+				// (more precise) GeoIP location fields set above.
+				result.IPinfoASN = asn
+				result.IPinfoOrg = org
+			}
+
 			// Also query ipapi.is for score/usage type (free, no key).
+			// This doubles as a fallback ASN/Org source (see ToJSON).
 			result.IpapiOK = q.fetchIpapi(ctx, &result)
 			return result
 		}
@@ -87,6 +105,25 @@ func (q *Quality) fetchIPinfo(ctx context.Context, result *InfoResult) bool {
 	}
 	*result = mergeInfo(*result, r)
 	return true
+}
+
+// fetchIPinfoASNOrg queries IPinfo purely for ASN/organization data,
+// without touching any other InfoResult fields. Used when GeoIP mmdb
+// already supplied more precise location data that a full fetchIPinfo
+// call (via mergeInfo) would otherwise overwrite.
+func (q *Quality) fetchIPinfoASNOrg(ctx context.Context) (asn, org string, ok bool) {
+	resp, err := q.httpGet(ctx, urlIPinfo+q.ip)
+	if err != nil {
+		q.log.Debug("ipinfo asn/org fetch failed", "err", err)
+		return "", "", false
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	r, ok := parseIPinfoBody(body)
+	if !ok {
+		return "", "", false
+	}
+	return r.IPinfoASN, r.IPinfoOrg, true
 }
 
 // parseIPinfoBody parses an IPinfo response (demo widget or plain API) into

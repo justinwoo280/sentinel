@@ -103,6 +103,46 @@ func TestDownloadSuccess(t *testing.T) {
 	}
 }
 
+func TestDownloadASNSuccess(t *testing.T) {
+	dir := t.TempDir()
+	asnDBPath := filepath.Join(dir, "GeoLite2-ASN.mmdb")
+
+	mmdbContent := make([]byte, 2*1024*1024)
+	tarGzBuf := newTarGz(t, mmdbContent)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(tarGzBuf)
+	}))
+	defer srv.Close()
+
+	result, err := DownloadASN(context.Background(), Config{
+		ASNDBPath:   asnDBPath,
+		DownloadURL: srv.URL,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.OK {
+		t.Fatal("expected OK")
+	}
+	if result.Path != asnDBPath {
+		t.Fatalf("path: got %q, want %q", result.Path, asnDBPath)
+	}
+	if !fileExists(asnDBPath) {
+		t.Fatal("asn database file should exist")
+	}
+}
+
+func TestDownloadASNMissingCredentials(t *testing.T) {
+	_, err := DownloadASN(context.Background(), Config{
+		ASNDBPath: filepath.Join(t.TempDir(), "GeoLite2-ASN.mmdb"),
+		// No account_id/license_key, no download URL.
+	})
+	if err == nil {
+		t.Fatal("expected error for missing account_id/license_key")
+	}
+}
+
 func TestDownloadHTTPError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -1,7 +1,8 @@
-// Package geoip provides Maxmind GeoLite2-City mmdb management:
-// download, SHA-256 verification, tar.gz extraction, daily update
-// check, and lookup. The database is NOT embedded in the binary —
-// it's downloaded on first use and refreshed daily (DESIGN.md §5.4).
+// Package geoip provides Maxmind GeoLite2 mmdb management: download,
+// SHA-256 verification, tar.gz extraction, daily update check, and
+// lookup, for both the City and ASN editions. Databases are NOT
+// embedded in the binary — they're downloaded on first use and
+// refreshed daily (DESIGN.md §5.4).
 package geoip
 
 import (
@@ -24,9 +25,10 @@ type Config struct {
 	Enabled        bool          `yaml:"enabled"`
 	AccountID      string        `yaml:"account_id"`      // Maxmind Account ID (used as Basic Auth username)
 	LicenseKey     string        `yaml:"license_key"`     // Maxmind license key (free, used as Basic Auth password)
-	DBPath         string        `yaml:"db_path"`         // local path to .mmdb
+	DBPath         string        `yaml:"db_path"`         // local path to the GeoLite2-City .mmdb
+	ASNDBPath      string        `yaml:"asn_db_path"`     // local path to the GeoLite2-ASN .mmdb
 	UpdateInterval time.Duration `yaml:"update_interval"` // check interval (default 24h)
-	DownloadURL    string        `yaml:"download_url"`    // optional override
+	DownloadURL    string        `yaml:"download_url"`    // optional override (edition-agnostic, for mirrors/tests)
 }
 
 // DefaultConfig returns sensible defaults.
@@ -34,16 +36,28 @@ func DefaultConfig() Config {
 	return Config{
 		Enabled:        true,
 		DBPath:         "/var/lib/sentinel/GeoLite2-City.mmdb",
+		ASNDBPath:      "/var/lib/sentinel/GeoLite2-ASN.mmdb",
 		UpdateInterval: 24 * time.Hour,
 	}
 }
 
-// maxmindDownloadURL is the official Maxmind GeoLite2-City download
-// endpoint. Per https://dev.maxmind.com/geoip/updating-databases, this
-// endpoint requires HTTP Basic Authentication (Account ID as username,
-// License Key as password) — the old query-parameter form only works
-// on the deprecated geoip_download endpoint.
-const maxmindDownloadURL = "https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz"
+// maxmindDownloadURLTemplate is the official Maxmind GeoLite2 download
+// endpoint, parameterized by edition ID (GeoLite2-City, GeoLite2-ASN).
+// Per https://dev.maxmind.com/geoip/updating-databases, this endpoint
+// requires HTTP Basic Authentication (Account ID as username, License
+// Key as password) — the old query-parameter form only works on the
+// deprecated geoip_download endpoint.
+const maxmindDownloadURLTemplate = "https://download.maxmind.com/geoip/databases/%s/download?suffix=tar.gz"
+
+// editionCity and editionASN are the Maxmind database edition IDs we
+// download. GeoLite2-City already includes country/region/city/coords/
+// timezone; GeoLite2-ASN adds the autonomous system number and
+// organization that City lacks (DESIGN.md §5.4 — avoids depending on
+// remote IPinfo/ipapi.is calls for ASN/Org whenever possible).
+const (
+	editionCity = "GeoLite2-City"
+	editionASN  = "GeoLite2-ASN"
+)
 
 // DownloadResult holds the outcome of a download attempt.
 type DownloadResult struct {
@@ -62,7 +76,21 @@ type DownloadResult struct {
 // https://dev.maxmind.com/geoip/updating-databases. If cfg.DownloadURL
 // is set, it's used instead (for mirrors or alternative sources).
 func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
-	if cfg.DBPath == "" {
+	return downloadEdition(ctx, cfg, editionCity, cfg.DBPath)
+}
+
+// DownloadASN fetches the GeoLite2-ASN database (autonomous system
+// number + organization — not included in GeoLite2-City) and
+// atomically installs it at cfg.ASNDBPath. Same auth/verification
+// process as Download.
+func DownloadASN(ctx context.Context, cfg Config) (*DownloadResult, error) {
+	return downloadEdition(ctx, cfg, editionASN, cfg.ASNDBPath)
+}
+
+// downloadEdition fetches the given Maxmind edition, verifies it,
+// extracts the .mmdb file, and atomically installs it at destPath.
+func downloadEdition(ctx context.Context, cfg Config, editionID, destPath string) (*DownloadResult, error) {
+	if destPath == "" {
 		return nil, fmt.Errorf("geoip: db_path is required")
 	}
 
@@ -72,11 +100,11 @@ func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 		if cfg.AccountID == "" || cfg.LicenseKey == "" {
 			return nil, fmt.Errorf("geoip: account_id and license_key are required (find them at https://www.maxmind.com/en/accounts/current/license-key)")
 		}
-		dlURL = maxmindDownloadURL
+		dlURL = fmt.Sprintf(maxmindDownloadURLTemplate, editionID)
 	}
 
 	// 1. Download tar.gz to a temp file.
-	tmpDir := filepath.Dir(cfg.DBPath)
+	tmpDir := filepath.Dir(destPath)
 	if err := os.MkdirAll(tmpDir, 0755); err != nil {
 		return nil, fmt.Errorf("geoip: create db dir: %w", err)
 	}
@@ -140,19 +168,19 @@ func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 		return nil, fmt.Errorf("geoip: extracted db too small: %d bytes", info.Size())
 	}
 
-	// 5. Atomic install: rename old → .bak, rename new → dbPath.
-	bakPath := cfg.DBPath + ".bak"
-	hasOld := fileExists(cfg.DBPath)
+	// 5. Atomic install: rename old → .bak, rename new → destPath.
+	bakPath := destPath + ".bak"
+	hasOld := fileExists(destPath)
 	if hasOld {
-		if err := os.Rename(cfg.DBPath, bakPath); err != nil {
+		if err := os.Rename(destPath, bakPath); err != nil {
 			return nil, fmt.Errorf("geoip: backup old db: %w", err)
 		}
 	}
 
-	if err := os.Rename(mmdbPath, cfg.DBPath); err != nil {
+	if err := os.Rename(mmdbPath, destPath); err != nil {
 		// Restore backup on failure (best-effort).
 		if hasOld {
-			if rerr := os.Rename(bakPath, cfg.DBPath); rerr != nil {
+			if rerr := os.Rename(bakPath, destPath); rerr != nil {
 				return nil, fmt.Errorf("geoip: install new db: %w (rollback also failed: %v)", err, rerr)
 			}
 		}
@@ -166,7 +194,7 @@ func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 
 	return &DownloadResult{
 		OK:      true,
-		Path:    cfg.DBPath,
+		Path:    destPath,
 		SHA256:  actualHash,
 		Size:    info.Size(),
 		Updated: true,
