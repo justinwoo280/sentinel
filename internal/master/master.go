@@ -33,6 +33,13 @@ type Master struct {
 	qualityTokens map[string]*qualityToken // short token → quality metrics (for "save to trend DB" button)
 	qualityMu     sync.Mutex
 	qualitySeq    uint64
+	admins        map[int64]bool // authorized Telegram user IDs (allowlist)
+}
+
+// isAuthorized reports whether the given Telegram user ID is on the admin
+// allowlist. An empty allowlist is fail-closed: nobody is authorized.
+func (m *Master) isAuthorized(userID int64) bool {
+	return m.admins[userID]
 }
 
 // qualityToken holds metrics extracted from a quality result, keyed by
@@ -93,6 +100,15 @@ func New(cfg config.MasterConfig, log *slog.Logger) (*Master, error) {
 		tg = telegram.New(cfg.Telegram.Token)
 	}
 
+	admins := make(map[int64]bool, len(cfg.Telegram.AdminIDs))
+	for _, id := range cfg.Telegram.AdminIDs {
+		admins[id] = true
+	}
+	if tg != nil && len(admins) == 0 {
+		log.Warn("telegram admin allowlist is EMPTY — the bot is fail-closed and " +
+			"will deny everyone; set telegram.admin_ids in the config")
+	}
+
 	m := &Master{
 		cfg:           cfg,
 		log:           log,
@@ -101,6 +117,7 @@ func New(cfg config.MasterConfig, log *slog.Logger) (*Master, error) {
 		tg:            tg,
 		pendingRename: make(map[int64]string),
 		qualityTokens: make(map[string]*qualityToken),
+		admins:        admins,
 	}
 
 	// Wire server event handler.
@@ -164,6 +181,22 @@ func (m *Master) handleMessage(msg *telegram.Message) {
 	}
 	chatID := msg.Chat.ID
 
+	// Authorization gate (fail-closed): only allowlisted user IDs may
+	// operate the bot. Reply to unauthorized users with their ID so they
+	// (or the operator) can add it to telegram.admin_ids.
+	if msg.From == nil || !m.isAuthorized(msg.From.ID) {
+		var uid int64
+		if msg.From != nil {
+			uid = msg.From.ID
+		}
+		m.log.Warn("rejected unauthorized telegram message",
+			"user_id", uid, "chat_id", chatID)
+		m.tg.SendMessage(context.Background(), chatID, fmt.Sprintf(
+			"Unauthorized. Your Telegram user ID is `%d`.\n"+
+				"Ask the operator to add it to `telegram.admin_ids` in the master config.", uid))
+		return
+	}
+
 	switch {
 	case msg.Text == "/start" || msg.Text == "/menu":
 		m.sendMenu(chatID)
@@ -190,6 +223,19 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 		return
 	}
 	chatID := cb.Message.Chat.ID
+
+	// Authorization gate (fail-closed): gate on the pressing user (cb.From),
+	// not the message chat. Ack first so the button spinner stops.
+	if cb.From == nil || !m.isAuthorized(cb.From.ID) {
+		var uid int64
+		if cb.From != nil {
+			uid = cb.From.ID
+		}
+		_ = m.tg.AnswerCallbackQuery(ctx, cb.ID, "Unauthorized")
+		m.log.Warn("rejected unauthorized telegram callback",
+			"user_id", uid, "chat_id", chatID, "data", cb.Data)
+		return
+	}
 
 	// Acknowledge the callback.
 	_ = m.tg.AnswerCallbackQuery(ctx, cb.ID, "")

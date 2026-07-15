@@ -208,6 +208,10 @@ type MasterNodeConfig struct {
 type TelegramConfig struct {
 	Token     string `yaml:"token"`
 	EnableOTA bool   `yaml:"enable_ota"`
+	// AdminIDs is the allowlist of Telegram user IDs permitted to control
+	// the bot. If empty, the bot is fail-closed (denies everyone) — you
+	// MUST add at least one admin ID before the bot is usable.
+	AdminIDs []int64 `yaml:"admin_ids"`
 }
 
 type StoreConfig struct {

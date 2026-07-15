@@ -151,6 +151,7 @@ func TestMasterConfigRoundTrip(t *testing.T) {
 
 	cfg := DefaultMaster()
 	cfg.Telegram.Token = "test-token"
+	cfg.Telegram.AdminIDs = []int64{111, 222}
 	cfg.Control.Listen = ":9999"
 
 	if err := SaveMaster(path, cfg); err != nil {
@@ -166,6 +167,9 @@ func TestMasterConfigRoundTrip(t *testing.T) {
 	}
 	if loaded.Control.Listen != ":9999" {
 		t.Fatalf("listen: got %q, want :9999", loaded.Control.Listen)
+	}
+	if len(loaded.Telegram.AdminIDs) != 2 || loaded.Telegram.AdminIDs[0] != 111 || loaded.Telegram.AdminIDs[1] != 222 {
+		t.Fatalf("admin_ids: got %v, want [111 222]", loaded.Telegram.AdminIDs)
 	}
 }
 

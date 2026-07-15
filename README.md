@@ -75,12 +75,26 @@ This:
 4. installs and enables `sentinel-master.service` (or an `@reboot` cron entry on
    non-systemd hosts).
 
-Then add your Telegram bot token and start:
+Then add your Telegram bot token **and your admin allowlist**, and start:
 
 ```sh
-sentinel manage --role master     # menu -> Edit configuration -> Telegram token
+sentinel manage --role master     # menu -> Edit configuration -> Telegram token + Admin IDs
 systemctl restart sentinel-master
 ```
+
+> **Important — bot authorization.** The Telegram bot is **fail-closed**: only
+> Telegram user IDs on the `telegram.admin_ids` allowlist can operate it. If the
+> list is empty, the bot denies everyone. You **must** add at least one admin ID.
+> To find your ID, just message the bot — it replies with your numeric ID (which
+> you then add to the allowlist). Config example:
+>
+> ```yaml
+> telegram:
+>   token: "123456:ABC-your-bot-token"
+>   admin_ids:
+>     - 123456789      # your Telegram user ID
+>   enable_ota: true
+> ```
 
 Open inbound TCP on the control port (default `:8443`) in your firewall / cloud
 security group. This is the only port Sentinel needs open, anywhere.
@@ -121,8 +135,8 @@ Manage everything else from the Telegram bot (`/start`).
 - **Show status & config summary** — service state + config at a glance
 - **Start / Stop / Restart / Enable on boot** — service control
 - **Edit configuration** — alias, module toggles, Master address/key, OTA,
-  schedule, bind IP, and quality API keys (agent); Telegram token, OTA, listen
-  address (master)
+  schedule, bind IP, and quality API keys (agent); Telegram token, **admin
+  allowlist**, OTA, listen address (master)
 - **Regenerate registration blob** (agent) / **Show public key** (master)
 - **View recent logs** — journalctl or the cron log file
 - **Uninstall** — stop + remove the service, optionally the config, data

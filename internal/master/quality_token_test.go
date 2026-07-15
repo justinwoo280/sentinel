@@ -1,6 +1,7 @@
 package master
 
 import (
+	"log/slog"
 	"testing"
 	"time"
 
@@ -10,8 +11,10 @@ import (
 
 func newTestMaster() *Master {
 	return &Master{
+		log:           slog.Default(),
 		qualityTokens: make(map[string]*qualityToken),
 		pendingRename: make(map[int64]string),
+		admins:        make(map[int64]bool),
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -191,6 +192,7 @@ func (p *Panel) showStatus() {
 		fmt.Printf("Listen:      %s\n", cfg.Control.Listen)
 		fmt.Printf("Store:       %s\n", cfg.Store.Path)
 		fmt.Printf("Telegram:    %s\n", tokenSummary(cfg.Telegram.Token))
+		fmt.Printf("Admins:      %s\n", adminIDsSummary(cfg.Telegram.AdminIDs))
 		fmt.Printf("OTA enabled: %v\n", cfg.Telegram.EnableOTA)
 	}
 }
@@ -337,6 +339,7 @@ func (p *Panel) editMasterConfig() {
 		fmt.Printf(" 1. Telegram token  [%s]\n", tokenSummary(cfg.Telegram.Token))
 		fmt.Printf(" 2. OTA enabled     [%v]\n", cfg.Telegram.EnableOTA)
 		fmt.Printf(" 3. Listen address  [%s]\n", cfg.Control.Listen)
+		fmt.Printf(" 4. Admin IDs       [%s]\n", adminIDsSummary(cfg.Telegram.AdminIDs))
 		fmt.Println(" 0. Save and return")
 		switch p.prompt("Field: ") {
 		case "1":
@@ -345,6 +348,8 @@ func (p *Panel) editMasterConfig() {
 			cfg.Telegram.EnableOTA = p.promptBool("Enable OTA?", cfg.Telegram.EnableOTA)
 		case "3":
 			cfg.Control.Listen = p.prompt("Listen address (e.g. :8443): ")
+		case "4":
+			cfg.Telegram.AdminIDs = p.editAdminIDs(cfg.Telegram.AdminIDs)
 		case "0", "":
 			if err := config.SaveMaster(masterCfgPath, cfg); err != nil {
 				fmt.Printf("Save failed: %v\n", err)
@@ -356,6 +361,69 @@ func (p *Panel) editMasterConfig() {
 			fmt.Println("Invalid field.")
 		}
 	}
+}
+
+// editAdminIDs manages the Telegram admin allowlist. Enter an ID to add
+// it, "-<id>" to remove, or blank to finish.
+func (p *Panel) editAdminIDs(ids []int64) []int64 {
+	for {
+		fmt.Println("\n--- Admin Telegram user IDs (allowlist) ---")
+		if len(ids) == 0 {
+			fmt.Println("  (none — the bot is FAIL-CLOSED and will deny everyone)")
+		}
+		for _, id := range ids {
+			fmt.Printf("  %d\n", id)
+		}
+		fmt.Println("Enter an ID to add, '-<id>' to remove, blank to finish.")
+		fmt.Println("Tip: an unauthorized user messaging the bot is told their own ID.")
+		v := p.prompt("ID: ")
+		if v == "" {
+			return ids
+		}
+		if strings.HasPrefix(v, "-") {
+			rm, err := strconv.ParseInt(strings.TrimPrefix(v, "-"), 10, 64)
+			if err != nil {
+				fmt.Println("Invalid ID.")
+				continue
+			}
+			ids = removeID(ids, rm)
+			continue
+		}
+		add, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			fmt.Println("Invalid ID.")
+			continue
+		}
+		if !containsID(ids, add) {
+			ids = append(ids, add)
+		}
+	}
+}
+
+func containsID(ids []int64, id int64) bool {
+	for _, x := range ids {
+		if x == id {
+			return true
+		}
+	}
+	return false
+}
+
+func removeID(ids []int64, id int64) []int64 {
+	out := ids[:0]
+	for _, x := range ids {
+		if x != id {
+			out = append(out, x)
+		}
+	}
+	return out
+}
+
+func adminIDsSummary(ids []int64) string {
+	if len(ids) == 0 {
+		return "(none — fail-closed)"
+	}
+	return fmt.Sprintf("%d configured", len(ids))
 }
 
 // editQualityKeys edits the optional commercial-API keys for the quality
