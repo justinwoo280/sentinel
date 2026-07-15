@@ -37,6 +37,23 @@ type Installer struct {
 func Run(cfgPath string) error {
 	i := &Installer{}
 
+	// Guard: if an agent config already exists, warn before overwriting.
+	// A fresh install generates a NEW UUID, which orphans the existing
+	// registration (the node would need to be re-registered on the Master).
+	if _, err := os.Stat(cfgPath); err == nil {
+		fmt.Printf("\nWARNING: an agent config already exists at %s.\n", cfgPath)
+		fmt.Println("Continuing will generate a NEW identity (UUID) and overwrite it,")
+		fmt.Println("which orphans the current registration on the Master.")
+		fmt.Println("To only change settings, use 'sentinel manage' instead.")
+		fmt.Print("Type 'yes' to overwrite and re-install: ")
+		var confirm string
+		fmt.Scanln(&confirm)
+		if strings.TrimSpace(strings.ToLower(confirm)) != "yes" {
+			fmt.Println("Aborted; existing config left untouched.")
+			return nil
+		}
+	}
+
 	// Step 1: Region selection.
 	if err := i.selectRegion(); err != nil {
 		return err

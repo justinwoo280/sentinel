@@ -111,20 +111,38 @@ func masterInit(configPath string, installService bool) error {
 	// Ensure config dir exists.
 	_ = os.MkdirAll(filepath_(configPath), 0755)
 
+	// If a config already exists, preserve it (token, admin_ids, etc.) —
+	// never clobber user settings. Only write defaults on first init.
+	cfgExisted := fileExists(configPath)
+	if cfgExisted {
+		if loaded, err := config.LoadMaster(configPath); err == nil {
+			cfg = loaded
+		} else {
+			return fmt.Errorf("master init: existing config at %s is invalid (%w); "+
+				"fix or remove it before re-running init", configPath, err)
+		}
+	}
+
 	existed := keyExists(cfg.Control.StaticKeyPath)
 	_, pubB64, err := loadOrCreateStaticKey(cfg.Control.StaticKeyPath)
 	if err != nil {
 		return err
 	}
-	if err := config.SaveMaster(configPath, cfg); err != nil {
-		return err
+	if !cfgExisted {
+		if err := config.SaveMaster(configPath, cfg); err != nil {
+			return err
+		}
 	}
 	if existed {
 		fmt.Printf("Master static key already exists at %s (preserved)\n", cfg.Control.StaticKeyPath)
 	} else {
 		fmt.Printf("Master static key generated at %s\n", cfg.Control.StaticKeyPath)
 	}
-	fmt.Printf("Master config written to %s\n", configPath)
+	if cfgExisted {
+		fmt.Printf("Master config already exists at %s (preserved)\n", configPath)
+	} else {
+		fmt.Printf("Master config written to %s\n", configPath)
+	}
 	if pubB64 != "" {
 		fmt.Printf("Static public key (share with agents): %s\n", pubB64)
 	}
@@ -143,6 +161,11 @@ func masterInit(configPath string, installService bool) error {
 
 // keyExists reports whether the static key file already exists.
 func keyExists(path string) bool {
+	return fileExists(path)
+}
+
+// fileExists reports whether a path exists.
+func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
