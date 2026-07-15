@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.tokopedia.com/",
+      "https://www.shopee.co.id/",
+      "https://www.google.co.id/",
+      "https://www.kompas.com/",
+      "https://www.detik.com/"
+    ]
+  }
+}

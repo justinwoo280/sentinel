@@ -1,0 +1,9 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.google.mn/",
+      "https://www.montsame.mn/",
+      "https://www.news.mn/"
+    ]
+  }
+}

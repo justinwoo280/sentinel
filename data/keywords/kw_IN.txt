@@ -1,0 +1,15 @@
+weather
+news
+train
+food
+travel
+Flipkart
+Amazon
+YouTube
+cricket
+elections
+stock market
+rupee dollar
+IRCTC
+Zomato
+

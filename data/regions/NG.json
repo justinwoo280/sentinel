@@ -1,0 +1,10 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.jumia.com.ng/",
+      "https://www.google.com.ng/",
+      "https://www.vanguardngr.com/",
+      "https://punchng.com/"
+    ]
+  }
+}

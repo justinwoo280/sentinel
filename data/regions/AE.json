@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.ae/",
+      "https://www.noon.com/uae-en/",
+      "https://www.google.ae/",
+      "https://www.thenationalnews.com/",
+      "https://www.khaleejtimes.com/"
+    ]
+  }
+}

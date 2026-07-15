@@ -1,0 +1,9 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.google.com.mm/",
+      "https://www.mmtimes.com/",
+      "https://www.irrawaddy.com/"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.coupang.com/",
+      "https://www.naver.com/",
+      "https://www.google.co.kr/",
+      "https://www.chosun.com/",
+      "https://www.nate.com/"
+    ]
+  }
+}

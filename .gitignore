@@ -1,0 +1,16 @@
+# Build output
+/dist/
+/sentinel
+/sentinel-*
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# Fuzz corpus (crash cases go in testdata/fuzz and SHOULD be committed;
+# the ephemeral cache does not live here)
+
+# Editor / OS
+.DS_Store
+*.swp

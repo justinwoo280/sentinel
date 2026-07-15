@@ -1,0 +1,12 @@
+weather
+news
+train
+food
+travel
+Amazon
+YouTube
+elections
+stock market
+loonie dollar
+hockey
+

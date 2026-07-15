@@ -1,0 +1,71 @@
+name: release
+
+# Build cross-platform binaries, generate SHA-256 checksums, and publish
+# them to a GitHub Release whenever a version tag (vX.Y.Z) is pushed.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build and release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+          check-latest: true
+
+      - name: Verify (vet + race tests)
+        run: |
+          go vet ./...
+          go test -race -count=1 ./...
+
+      - name: Build binaries
+        env:
+          CGO_ENABLED: 0
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          LDFLAGS="-s -w -X github.com/justinwoo280/sentinel/internal/cli.Version=${VERSION}"
+          mkdir -p dist
+          for arch in amd64 arm64; do
+            echo ">> building linux/${arch} (${VERSION})"
+            GOOS=linux GOARCH="${arch}" go build \
+              -trimpath \
+              -ldflags "${LDFLAGS}" \
+              -o "dist/sentinel-linux-${arch}" \
+              ./cmd/sentinel
+          done
+
+      - name: Generate checksums
+        working-directory: dist
+        run: |
+          sha256sum sentinel-linux-* > checksums.txt
+          echo "=== checksums.txt ==="
+          cat checksums.txt
+
+      - name: Smoke test amd64 binary
+        working-directory: dist
+        run: |
+          chmod +x sentinel-linux-amd64
+          ./sentinel-linux-amd64 version
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/sentinel-linux-amd64
+            dist/sentinel-linux-arm64
+            dist/checksums.txt
+            scripts/install.sh
+          generate_release_notes: true
+          fail_on_unmatched_files: true

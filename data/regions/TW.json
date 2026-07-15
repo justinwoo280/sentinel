@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://24h.pchome.com.tw/",
+      "https://www.momoshop.com.tw/",
+      "https://www.google.com.tw/",
+      "https://www.ettoday.net/",
+      "https://www.ltn.com.tw/"
+    ]
+  }
+}

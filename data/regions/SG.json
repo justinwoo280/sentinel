@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.sg/",
+      "https://www.lazada.sg/",
+      "https://www.shopee.sg/",
+      "https://www.google.com.sg/",
+      "https://www.channelnewsasia.com/"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+weather
+news
+train
+food
+travel
+Amazon
+eBay
+YouTube
+elections
+stock market
+AUD USD
+AFL
+

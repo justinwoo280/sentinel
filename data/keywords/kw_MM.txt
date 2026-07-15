@@ -1,0 +1,10 @@
+weather
+news
+train
+food
+travel
+YouTube
+elections
+stock market
+kyat dollar
+

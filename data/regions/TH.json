@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.shopee.co.th/",
+      "https://www.lazada.co.th/",
+      "https://www.google.co.th/",
+      "https://www.bangkokpost.com/",
+      "https://www.thairath.co.th/"
+    ]
+  }
+}

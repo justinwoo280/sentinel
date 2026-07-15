@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.sa/",
+      "https://www.noon.com/saudi-arabic/",
+      "https://www.google.com.sa/",
+      "https://www.arabnews.com/",
+      "https://www.alarabiya.net/"
+    ]
+  }
+}

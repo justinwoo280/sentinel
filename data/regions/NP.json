@@ -1,0 +1,10 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.daraz.com.np/",
+      "https://www.google.com.np/",
+      "https://www.kathmandupost.com/",
+      "https://thehimalayantimes.com/"
+    ]
+  }
+}

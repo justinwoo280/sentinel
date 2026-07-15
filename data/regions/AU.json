@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.com.au/",
+      "https://www.ebay.com.au/",
+      "https://www.google.com.au/",
+      "https://www.abc.net.au/",
+      "https://www.smh.com.au/"
+    ]
+  }
+}

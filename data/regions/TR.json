@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.trendyol.com/",
+      "https://www.hepsiburada.com/",
+      "https://www.google.com.tr/",
+      "https://www.hurriyet.com.tr/",
+      "https://www.sozcu.com.tr/"
+    ]
+  }
+}

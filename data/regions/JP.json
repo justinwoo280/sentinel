@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.co.jp/",
+      "https://www.rakuten.co.jp/",
+      "https://www.yahoo.co.jp/",
+      "https://www.google.co.jp/",
+      "https://news.yahoo.co.jp/"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.shopee.com.my/",
+      "https://www.lazada.com.my/",
+      "https://www.google.com.my/",
+      "https://www.thestar.com.my/",
+      "https://www.nst.com.my/"
+    ]
+  }
+}

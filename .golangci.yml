@@ -1,0 +1,71 @@
+# golangci-lint (v2) configuration for sentinel.
+# Conservative, high-signal linter set — no style bikeshedding.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unconvert
+    - bodyclose
+    - nilerr
+  settings:
+    errcheck:
+      # Ignore unchecked errors on conventional best-effort calls:
+      # deferred/cleanup Close, connection deadlines, cleanup file ops,
+      # interactive prompts, and fire-and-forget Telegram UI sends.
+      exclude-functions:
+        # Deferred / cleanup Close on concrete stdlib types.
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (net.Conn).Close
+        - (*net.TCPConn).Close
+        - (net.Listener).Close
+        - (*net.TCPListener).Close
+        - (*compress/gzip.Reader).Close
+        # Connection deadlines (best-effort).
+        - (net.Conn).SetReadDeadline
+        - (net.Conn).SetWriteDeadline
+        # Cleanup file ops.
+        - os.Remove
+        - os.RemoveAll
+        - os.MkdirAll
+        - os.WriteFile
+        # Interactive prompts and best-effort numeric parsing.
+        - fmt.Scanln
+        - fmt.Sscanf
+        # database/sql cleanup.
+        - (*database/sql.DB).Close
+        - (*database/sql.Rows).Close
+        # Store and fire-and-forget Telegram UI sends.
+        - (*github.com/justinwoo280/sentinel/internal/master/store.Store).Close
+        - (*github.com/justinwoo280/sentinel/internal/master/telegram.Client).SendMessage
+        - (*github.com/justinwoo280/sentinel/internal/master/telegram.Client).SendMessageWithKeyboard
+        - (*github.com/justinwoo280/sentinel/internal/master/telegram.Client).AnswerCallbackQuery
+        - (*github.com/oschwald/geoip2-golang.Reader).Close
+    staticcheck:
+      # Disable opinionated "quickfix" suggestions (QF*) — they are style,
+      # not correctness. Keep the real SA (bug) and S (simplification) checks.
+      checks:
+        - all
+        - -QF1001
+        - -QF1003
+        - -QF1012
+  exclusions:
+    rules:
+      # Test files may ignore some errcheck/bodyclose noise.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - bodyclose
+
+formatters:
+  enable:
+    - gofmt

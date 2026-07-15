@@ -1,0 +1,11 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.shopee.vn/",
+      "https://www.tiki.vn/",
+      "https://www.google.com.vn/",
+      "https://vnexpress.net/",
+      "https://tuoitre.vn/"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.google.la/",
+      "https://www.vientianetimes.org.la/"
+    ]
+  }
+}

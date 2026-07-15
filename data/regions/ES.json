@@ -1,0 +1,10 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.amazon.es/",
+      "https://www.google.es/",
+      "https://www.elpais.com/",
+      "https://www.abc.es/"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "trust_module": {
+    "white_urls": [
+      "https://www.hktvmall.com/",
+      "https://www.google.com.hk/",
+      "https://www.scmp.com/",
+      "https://www.hk01.com/"
+    ]
+  }
+}

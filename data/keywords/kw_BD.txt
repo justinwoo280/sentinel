@@ -1,0 +1,12 @@
+weather
+news
+train
+food
+travel
+Daraz
+YouTube
+cricket
+elections
+stock market
+taka dollar
+
