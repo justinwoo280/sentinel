@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -82,39 +83,99 @@ func (c *Client) GetUpdates(ctx context.Context, offset int64, timeout int) ([]U
 	defer resp.Body.Close()
 
 	var result struct {
-		OK     bool     `json:"ok"`
-		Result []Update `json:"result"`
+		OK          bool     `json:"ok"`
+		ErrorCode   int      `json:"error_code"`
+		Description string   `json:"description"`
+		Result      []Update `json:"result"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("telegram: decode getUpdates: %w", err)
 	}
+	// Telegram returns HTTP 200 with ok:false for auth/conflict errors
+	// (e.g. 401 invalid token, 409 another poller running). Surface them.
+	if !result.OK {
+		return nil, fmt.Errorf("telegram: getUpdates rejected (code %d): %s",
+			result.ErrorCode, result.Description)
+	}
 	return result.Result, nil
 }
 
-// SendMessage sends a text message.
-func (c *Client) SendMessage(ctx context.Context, chatID int64, text string) (*Message, error) {
-	v := url.Values{}
-	v.Set("chat_id", fmt.Sprintf("%d", chatID))
-	v.Set("text", text)
-	v.Set("parse_mode", "Markdown")
-
-	resp, err := c.apiWithForm(ctx, "sendMessage", v)
+// GetMe returns the bot's own identity, used to validate the token at
+// startup and to log which bot is running.
+func (c *Client) GetMe(ctx context.Context) (*User, error) {
+	resp, err := c.apiWithForm(ctx, "getMe", url.Values{})
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
 	var result struct {
-		OK     bool    `json:"ok"`
-		Result Message `json:"result"`
+		OK          bool   `json:"ok"`
+		ErrorCode   int    `json:"error_code"`
+		Description string `json:"description"`
+		Result      *User  `json:"result"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("telegram: decode sendMessage: %w", err)
+		return nil, fmt.Errorf("telegram: decode getMe: %w", err)
 	}
 	if !result.OK {
-		return nil, fmt.Errorf("telegram: sendMessage failed")
+		return nil, fmt.Errorf("telegram: getMe rejected (code %d): %s",
+			result.ErrorCode, result.Description)
 	}
-	return &result.Result, nil
+	return result.Result, nil
+}
+
+// SendMessage sends a text message. It tries Markdown first and falls
+// back to plain text if Telegram rejects the markup, so a message with
+// unbalanced markdown characters is never silently dropped.
+func (c *Client) SendMessage(ctx context.Context, chatID int64, text string) (*Message, error) {
+	return c.sendMessage(ctx, chatID, text, nil)
+}
+
+// sendMessage is the shared implementation for SendMessage and
+// SendMessageWithKeyboard. kbJSON may be nil (no keyboard).
+func (c *Client) sendMessage(ctx context.Context, chatID int64, text string, kbJSON []byte) (*Message, error) {
+	send := func(markdown bool) (*Message, string, error) {
+		v := url.Values{}
+		v.Set("chat_id", fmt.Sprintf("%d", chatID))
+		v.Set("text", text)
+		if markdown {
+			v.Set("parse_mode", "Markdown")
+		}
+		if kbJSON != nil {
+			v.Set("reply_markup", string(kbJSON))
+		}
+		resp, err := c.apiWithForm(ctx, "sendMessage", v)
+		if err != nil {
+			return nil, "", err
+		}
+		defer resp.Body.Close()
+		var result struct {
+			OK          bool    `json:"ok"`
+			ErrorCode   int     `json:"error_code"`
+			Description string  `json:"description"`
+			Result      Message `json:"result"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return nil, "", fmt.Errorf("telegram: decode sendMessage: %w", err)
+		}
+		if !result.OK {
+			return nil, result.Description, fmt.Errorf(
+				"telegram: sendMessage failed (code %d): %s", result.ErrorCode, result.Description)
+		}
+		return &result.Result, "", nil
+	}
+
+	msg, _, err := send(true)
+	if err == nil {
+		return msg, nil
+	}
+	// Markdown rejected (typically a 400 "can't parse entities"): retry as
+	// plain text so the user still receives the message.
+	msg2, _, err2 := send(false)
+	if err2 != nil {
+		return nil, err // report the original error
+	}
+	return msg2, nil
 }
 
 // InlineKeyboardButton is a button in an inline keyboard.
@@ -134,29 +195,7 @@ func (c *Client) SendMessageWithKeyboard(ctx context.Context, chatID int64, text
 	if err != nil {
 		return nil, fmt.Errorf("telegram: marshal keyboard: %w", err)
 	}
-	v := url.Values{}
-	v.Set("chat_id", fmt.Sprintf("%d", chatID))
-	v.Set("text", text)
-	v.Set("parse_mode", "Markdown")
-	v.Set("reply_markup", string(kbJSON))
-
-	resp, err := c.apiWithForm(ctx, "sendMessage", v)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var result struct {
-		OK     bool    `json:"ok"`
-		Result Message `json:"result"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("telegram: decode sendMessage: %w", err)
-	}
-	if !result.OK {
-		return nil, fmt.Errorf("telegram: sendMessage failed")
-	}
-	return &result.Result, nil
+	return c.sendMessage(ctx, chatID, text, kbJSON)
 }
 
 // AnswerCallbackQuery acknowledges a callback query.
@@ -226,8 +265,13 @@ func (c *Client) apiWithForm(ctx context.Context, method string, v url.Values) (
 }
 
 // PollLoop runs the getUpdates long-polling loop, calling handler for
-// each update. Blocks until ctx is cancelled.
-func (c *Client) PollLoop(ctx context.Context, getOffset func() int64, setOffset func(int64), handler func(Update)) {
+// each update. Blocks until ctx is cancelled. Errors are logged (with
+// backoff) so a bad token or a conflicting poller is visible.
+func (c *Client) PollLoop(ctx context.Context, getOffset func() int64, setOffset func(int64), handler func(Update), log *slog.Logger) {
+	if log == nil {
+		log = slog.Default()
+	}
+	var failures int
 	for {
 		if ctx.Err() != nil {
 			return
@@ -238,9 +282,16 @@ func (c *Client) PollLoop(ctx context.Context, getOffset func() int64, setOffset
 			if ctx.Err() != nil {
 				return
 			}
+			failures++
+			// Log the first failure immediately and then periodically to
+			// avoid flooding, so operators see *why* the bot is silent.
+			if failures == 1 || failures%12 == 0 {
+				log.Error("telegram getUpdates failed", "err", err, "consecutive_failures", failures)
+			}
 			time.Sleep(5 * time.Second)
 			continue
 		}
+		failures = 0
 		for _, upd := range updates {
 			handler(upd)
 			if upd.UpdateID >= offset {

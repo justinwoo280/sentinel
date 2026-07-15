@@ -5,6 +5,7 @@ package master
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -138,16 +139,33 @@ func (m *Master) Run(ctx context.Context) error {
 
 	// Start Telegram bot if configured.
 	if m.tg != nil {
+		// Validate the token up front so a bad token is obvious in the
+		// logs instead of silently failing to receive messages.
+		if me, err := m.tg.GetMe(ctx); err != nil {
+			m.log.Error("telegram token validation failed (bot will not work)", "err", err)
+		} else {
+			m.log.Info("telegram bot authenticated",
+				"username", me.UserName, "id", me.ID, "admins", len(m.admins))
+			if len(m.admins) == 0 {
+				m.log.Warn("telegram admin allowlist is EMPTY — every message will be denied; " +
+					"set telegram.admin_ids and restart")
+			}
+		}
 		go m.runTelegram(ctx)
-		m.log.Info("telegram bot started")
 	} else {
 		m.log.Info("telegram not configured, skipping bot")
 	}
 
 	// Wait for shutdown.
 	<-ctx.Done()
+	m.log.Info("shutting down")
 	m.store.Close()
-	return ctx.Err()
+	// A context cancellation is a normal, clean shutdown (e.g. SIGTERM
+	// from systemd) — do not report it as an error / non-zero exit.
+	if err := ctx.Err(); err != nil && !errors.Is(err, context.Canceled) {
+		return err
+	}
+	return nil
 }
 
 // runTelegram runs the Telegram long-polling loop.
@@ -160,7 +178,7 @@ func (m *Master) runTelegram(ctx context.Context) {
 		_ = m.store.SetTGOffset(ctx, off)
 	}
 
-	m.tg.PollLoop(ctx, getOffset, setOffset, m.handleUpdate)
+	m.tg.PollLoop(ctx, getOffset, setOffset, m.handleUpdate, m.log)
 }
 
 // handleUpdate routes a Telegram update to the appropriate handler.

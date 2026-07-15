@@ -7,6 +7,7 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -142,7 +143,11 @@ func (a *Agent) Start(ctx context.Context) error {
 
 	// Start scheduler (blocks).
 	a.scheduler.Run(ctx)
-	return ctx.Err()
+	// Context cancellation (SIGTERM) is a clean shutdown, not an error.
+	if err := ctx.Err(); err != nil && !errors.Is(err, context.Canceled) {
+		return err
+	}
+	return nil
 }
 
 // ---------------------------------------------------------------------------

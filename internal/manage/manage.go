@@ -374,9 +374,9 @@ func (p *Panel) editAdminIDs(ids []int64) []int64 {
 		for _, id := range ids {
 			fmt.Printf("  %d\n", id)
 		}
-		fmt.Println("Enter an ID to add, '-<id>' to remove, blank to finish.")
+		fmt.Println("Commands:  <id> = add   -<id> = remove   [Enter] = done")
 		fmt.Println("Tip: an unauthorized user messaging the bot is told their own ID.")
-		v := p.prompt("ID: ")
+		v := p.prompt("ID (or Enter to finish): ")
 		if v == "" {
 			return ids
 		}
@@ -386,7 +386,12 @@ func (p *Panel) editAdminIDs(ids []int64) []int64 {
 				fmt.Println("Invalid ID.")
 				continue
 			}
-			ids = removeID(ids, rm)
+			if containsID(ids, rm) {
+				ids = removeID(ids, rm)
+				fmt.Printf("Removed %d.\n", rm)
+			} else {
+				fmt.Printf("%d is not in the list.\n", rm)
+			}
 			continue
 		}
 		add, err := strconv.ParseInt(v, 10, 64)
@@ -394,8 +399,11 @@ func (p *Panel) editAdminIDs(ids []int64) []int64 {
 			fmt.Println("Invalid ID.")
 			continue
 		}
-		if !containsID(ids, add) {
+		if containsID(ids, add) {
+			fmt.Printf("%d is already an admin.\n", add)
+		} else {
 			ids = append(ids, add)
+			fmt.Printf("Added %d. Press Enter when done.\n", add)
 		}
 	}
 }
