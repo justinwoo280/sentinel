@@ -53,12 +53,19 @@ type NodeConfig struct {
 	Alias string `yaml:"alias"`
 }
 
+// RegionConfig identifies the selected country/state/city (matching the
+// original project's 4-level region hierarchy: continent -> country ->
+// state -> city). Only the three short IDs are stored; the actual
+// coordinates, lang_params, and trust whitelist are resolved at runtime
+// from the embedded city JSON (internal/geo.LoadCityRegion) — this is the
+// single source of truth, so it is never duplicated into config (avoiding
+// stale/drifted data between the two).
 type RegionConfig struct {
-	Code        string  `yaml:"code"`
-	Name        string  `yaml:"name"`
-	Lat         float64 `yaml:"lat"`
-	Lon         float64 `yaml:"lon"`
-	KeywordFile string  `yaml:"keyword_file"`
+	Code        string `yaml:"code"`  // country ID, e.g. "DE"
+	Name        string `yaml:"name"`  // display name, e.g. "Germany (德国) — Nuremberg (纽伦堡)"
+	State       string `yaml:"state"` // state ID, e.g. "BY" (or "Default")
+	City        string `yaml:"city"`  // city ID, e.g. "Nuremberg"
+	KeywordFile string `yaml:"keyword_file"`
 }
 
 type NetworkConfig struct {
@@ -165,6 +172,12 @@ func (c AgentConfig) Validate() error {
 	}
 	if c.Region.Code == "" {
 		return errors.New("config: region.code is required")
+	}
+	if c.Region.State == "" {
+		return errors.New("config: region.state is required")
+	}
+	if c.Region.City == "" {
+		return errors.New("config: region.city is required")
 	}
 	if c.Master.Enabled {
 		if c.Master.Addr == "" {

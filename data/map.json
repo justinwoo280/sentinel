@@ -4,7 +4,7 @@
   "continents": [
     {
       "id": "ASIA",
-      "name": "亚太战区 (Asia-Pacific)",
+      "name": "亚太地区 (Asia-Pacific)",
       "countries": [
         {
           "id": "JP",
@@ -354,7 +354,7 @@
     },
     {
       "id": "EUROPE",
-      "name": "欧洲战区 (Europe)",
+      "name": "欧洲地区 (Europe)",
       "countries": [
         {
           "id": "UK",
@@ -523,7 +523,7 @@
     },
     {
       "id": "AMERICAS",
-      "name": "美洲战区 (Americas)",
+      "name": "美洲地区 (Americas)",
       "countries": [
         {
           "id": "US",
@@ -761,7 +761,7 @@
     },
     {
       "id": "OCEANIA",
-      "name": "大洋洲战区 (Oceania)",
+      "name": "大洋洲地区 (Oceania)",
       "countries": [
         {
           "id": "AU",
@@ -824,7 +824,7 @@
     },
     {
       "id": "AFRICA",
-      "name": "非洲战区 (Africa)",
+      "name": "非洲地区 (Africa)",
       "countries": [
         {
           "id": "NG",

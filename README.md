@@ -52,6 +52,23 @@ curl -fsSL https://raw.githubusercontent.com/justinwoo280/sentinel/main/scripts/
 curl -fsSL https://raw.githubusercontent.com/justinwoo280/sentinel/main/scripts/install.sh | sh
 ```
 
+After the binary is verified and installed, the script hands off to an
+**interactive** installer that asks for the region (continent → country →
+state → city, auto-skipping levels with only one option) and, for agents,
+the Master's address and public key — same experience as running
+`sentinel install` directly on the box.
+
+> **Piped install + prompts:** `curl | sh` pipes the script itself through
+> stdin, so the script reconnects stdin to `/dev/tty` before launching the
+> interactive part, and the installer refuses to run (with a clear error)
+> if no terminal is available at all — it will never silently install with
+> unanswered defaults. If your environment doesn't expose `/dev/tty` (rare;
+> some minimal containers), use the command-substitution form instead,
+> which never touches stdin:
+> ```sh
+> sh -c "$(curl -fsSL https://raw.githubusercontent.com/justinwoo280/sentinel/main/scripts/install.sh)"
+> ```
+
 Manual install: download `sentinel-linux-<amd64|arm64>` and `checksums.txt` from
 the [releases page](https://github.com/justinwoo280/sentinel/releases), verify,
 then run `sentinel install`.

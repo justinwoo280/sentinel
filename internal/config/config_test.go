@@ -84,9 +84,9 @@ func TestAgentConfigRoundTrip(t *testing.T) {
 	cfg.Node.Name = "test-node"
 	cfg.Node.Alias = "TestAlias"
 	cfg.Region.Code = "JP"
-	cfg.Region.Name = "Japan"
-	cfg.Region.Lat = 35.6762
-	cfg.Region.Lon = 139.6503
+	cfg.Region.Name = "Japan — Tokyo"
+	cfg.Region.State = "Default"
+	cfg.Region.City = "Tokyo"
 	cfg.Master.Enabled = false
 
 	if err := SaveAgent(path, cfg); err != nil {
@@ -115,6 +115,8 @@ func TestAgentConfigValidate(t *testing.T) {
 	// Missing node.name
 	cfg := DefaultAgent()
 	cfg.Region.Code = "US"
+	cfg.Region.State = "CA"
+	cfg.Region.City = "Los_Angeles"
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected error for missing node.name")
 	}
@@ -127,10 +129,30 @@ func TestAgentConfigValidate(t *testing.T) {
 		t.Fatal("expected error for missing region.code")
 	}
 
+	// Missing region.state
+	cfg = DefaultAgent()
+	cfg.Node.Name = "x"
+	cfg.Region.Code = "US"
+	cfg.Region.City = "Los_Angeles"
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected error for missing region.state")
+	}
+
+	// Missing region.city
+	cfg = DefaultAgent()
+	cfg.Node.Name = "x"
+	cfg.Region.Code = "US"
+	cfg.Region.State = "CA"
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected error for missing region.city")
+	}
+
 	// Master enabled but missing fields
 	cfg = DefaultAgent()
 	cfg.Node.Name = "x"
 	cfg.Region.Code = "US"
+	cfg.Region.State = "CA"
+	cfg.Region.City = "Los_Angeles"
 	cfg.Master.Enabled = true
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected error for master enabled without addr/uuid/pub")
@@ -140,6 +162,8 @@ func TestAgentConfigValidate(t *testing.T) {
 	cfg = DefaultAgent()
 	cfg.Node.Name = "x"
 	cfg.Region.Code = "US"
+	cfg.Region.State = "CA"
+	cfg.Region.City = "Los_Angeles"
 	if err := cfg.Validate(); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

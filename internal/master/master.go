@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +22,32 @@ import (
 	"github.com/justinwoo280/sentinel/internal/protocol"
 	ewp "github.com/justinwoo280/sing-ewp"
 )
+
+// helpText is shown by /help. It explains the text commands and what each
+// node-panel button does.
+const helpText = "*Sentinel Master — Help*\n\n" +
+	"*Commands*\n" +
+	"/start or /menu — open the main panel\n" +
+	"/help — show this help\n" +
+	"/register <SENTINEL-REG:...> — register a new agent (paste the blob printed by `sentinel install`)\n\n" +
+	"*Main menu*\n" +
+	"Node List — browse nodes by region\n" +
+	"Global Keepalive — run one keepalive cycle on every node\n" +
+	"Global Report — collect a status report from every node\n" +
+	"Global OTA — self-update every online node (confirm required)\n\n" +
+	"*Node panel*\n" +
+	"Keepalive — run one keepalive cycle now (70% Google / 30% Trust, same as the automatic timer)\n" +
+	"Google — force a Google region-correction session now (fingerprint + coords + Search/News/Maps + CN-detection probes)\n" +
+	"Trust — force a reputation-warmup session now (visits regional high-reputation sites)\n" +
+	"Quality — run a full IP quality check and return the report\n" +
+	"Trend — view recorded quality trend history\n" +
+	"Log — fetch the node's recent logs\n" +
+	"Google/Trust ON·OFF — enable/disable that keepalive module\n" +
+	"Rename — change the node's display alias\n" +
+	"OTA — trigger self-update (confirm required)\n" +
+	"Delete — remove the node (confirm required)\n\n" +
+	"Google/Trust/Keepalive are the maintenance actions that gradually improve a mis-located ('sent to CN') IP; " +
+	"the agent also runs them automatically on a timer — the buttons just trigger one immediately."
 
 // Master is the control-plane runtime.
 type Master struct {
@@ -150,6 +177,15 @@ func (m *Master) Run(ctx context.Context) error {
 				m.log.Warn("telegram admin allowlist is EMPTY — every message will be denied; " +
 					"set telegram.admin_ids and restart")
 			}
+			// Register the command menu (the "/" suggestions).
+			if err := m.tg.SetMyCommands(ctx, []telegram.BotCommand{
+				{Command: "start", Description: "Open the main panel"},
+				{Command: "menu", Description: "Open the main panel"},
+				{Command: "help", Description: "Show help"},
+				{Command: "register", Description: "Register a new agent (paste SENTINEL-REG blob)"},
+			}); err != nil {
+				m.log.Warn("failed to set telegram command menu", "err", err)
+			}
 		}
 		go m.runTelegram(ctx)
 	} else {
@@ -218,6 +254,8 @@ func (m *Master) handleMessage(msg *telegram.Message) {
 	switch {
 	case msg.Text == "/start" || msg.Text == "/menu":
 		m.sendMenu(chatID)
+	case msg.Text == "/help":
+		m.tg.SendMessage(context.Background(), chatID, helpText)
 	case strings.HasPrefix(msg.Text, "/register"):
 		m.handleRegister(chatID, msg.Text)
 	case msg.ReplyTo != nil && strings.HasPrefix(msg.ReplyTo.Text, "Enter new alias"):
@@ -258,12 +296,25 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 	// Acknowledge the callback.
 	_ = m.tg.AnswerCallbackQuery(ctx, cb.ID, "")
 
+	// Navigation actions edit the current message in place (rather than
+	// spamming a new message each time), by editing cb.Message.
+	msgID := cb.Message.MessageID
+	edit := func(text string, kb telegram.InlineKeyboardMarkup) {
+		if err := m.tg.EditMessageText(ctx, chatID, msgID, text, &kb); err != nil {
+			// Fall back to a new message if the edit fails (e.g. message
+			// too old to edit, or identical content).
+			m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+		}
+	}
+
 	parts := strings.Split(cb.Data, "|")
 	action := parts[0]
 
 	switch action {
 	case ui.CBMenu:
-		m.sendMenu(chatID)
+		nodes, _ := m.store.ListAllNodes(ctx)
+		text, kb := ui.MainMenu(m.cfg.Master.Version, len(nodes))
+		edit(text, kb)
 
 	case ui.CBList:
 		nodes, err := m.store.ListAllNodes(ctx)
@@ -272,7 +323,7 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 			return
 		}
 		text, kb := ui.NodeList(nodes)
-		m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+		edit(text, kb)
 
 	case ui.CBNode:
 		if len(parts) < 2 {
@@ -286,16 +337,16 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 		}
 		online := m.srv.IsOnline(parseUUID(uuid))
 		text, kb := ui.NodePanel(node, online)
-		m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+		edit(text, kb)
 
 	case ui.CBRun, ui.CBGoogle, ui.CBTrust, ui.CBQuality, ui.CBReport, ui.CBLog:
 		m.dispatchToAgent(ctx, chatID, action, parts)
 
 	case ui.CBTrend:
-		m.handleTrend(ctx, chatID, parts)
+		m.handleTrend(ctx, chatID, msgID, parts)
 
 	case ui.CBToggle:
-		m.handleToggle(ctx, chatID, parts)
+		m.handleToggle(ctx, chatID, msgID, parts)
 
 	case ui.CBRename:
 		if len(parts) < 2 {
@@ -318,7 +369,7 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 			return
 		}
 		text, kb := ui.ConfirmDelete(uuid, node.NodeName)
-		m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+		edit(text, kb)
 
 	case ui.CBDeleteYes:
 		if len(parts) < 2 {
@@ -351,7 +402,7 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 				return
 			}
 			text, kb := ui.ConfirmGlobalOTA(online)
-			m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+			edit(text, kb)
 		} else {
 			// Single-node OTA confirmation.
 			uuid := parts[1]
@@ -369,7 +420,7 @@ func (m *Master) handleCallback(cb *telegram.CallbackQuery) {
 				return
 			}
 			text, kb := ui.ConfirmOTA(uuid, node.NodeName)
-			m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+			edit(text, kb)
 		}
 
 	case ui.CBOTAYes:
@@ -483,14 +534,30 @@ func (m *Master) dispatchToAgent(ctx context.Context, chatID int64, action strin
 		Cmd: cmd,
 	}
 
+	m.log.Info("dispatching command to agent", "uuid", uuid, "cmd", cmd, "id", msg.ID)
 	if err := m.srv.SendCommand(uuidBytes, msg); err != nil {
+		m.log.Warn("dispatch failed", "uuid", uuid, "cmd", cmd, "err", err)
 		m.tg.SendMessage(ctx, chatID, "Failed to send command: "+err.Error())
 		return
 	}
 	m.tg.SendMessage(ctx, chatID, "Command sent to node.")
 }
 
-func (m *Master) handleTrend(ctx context.Context, chatID int64, parts []string) {
+func (m *Master) handleTrend(ctx context.Context, chatID, msgID int64, parts []string) {
+	back := telegram.InlineKeyboardMarkup{}
+	if len(parts) >= 2 {
+		back = telegram.InlineKeyboardMarkup{
+			InlineKeyboard: [][]telegram.InlineKeyboardButton{
+				{{Text: "Back", CallbackData: fmt.Sprintf("%s|%s", ui.CBNode, parts[1])}},
+			},
+		}
+	}
+	editOrSend := func(text string) {
+		if err := m.tg.EditMessageText(ctx, chatID, msgID, text, &back); err != nil {
+			m.tg.SendMessageWithKeyboard(ctx, chatID, text, back)
+		}
+	}
+
 	if len(parts) < 2 {
 		m.tg.SendMessage(ctx, chatID, "Missing node UUID")
 		return
@@ -503,11 +570,11 @@ func (m *Master) handleTrend(ctx context.Context, chatID int64, parts []string) 
 	}
 	trends, err := m.store.GetTrends(ctx, node.NodeName, 10)
 	if err != nil {
-		m.tg.SendMessage(ctx, chatID, "Error fetching trends: "+err.Error())
+		editOrSend("Error fetching trends: " + err.Error())
 		return
 	}
 	if len(trends) == 0 {
-		m.tg.SendMessage(ctx, chatID, "No trend data for this node yet.")
+		editOrSend(fmt.Sprintf("*Trend: %s*\n\nNo trend data for this node yet.", node.NodeName))
 		return
 	}
 
@@ -524,11 +591,7 @@ func (m *Master) handleTrend(ctx context.Context, chatID int64, parts []string) 
 	}
 	report += "```\n"
 
-	m.tg.SendMessageWithKeyboard(ctx, chatID, report, telegram.InlineKeyboardMarkup{
-		InlineKeyboard: [][]telegram.InlineKeyboardButton{
-			{{Text: "Back", CallbackData: fmt.Sprintf("%s|%s", ui.CBNode, uuid)}},
-		},
-	})
+	editOrSend(report)
 }
 
 func truncStr(s string, n int) string {
@@ -538,7 +601,7 @@ func truncStr(s string, n int) string {
 	return s
 }
 
-func (m *Master) handleToggle(ctx context.Context, chatID int64, parts []string) {
+func (m *Master) handleToggle(ctx context.Context, chatID, msgID int64, parts []string) {
 	if len(parts) < 4 {
 		m.tg.SendMessage(ctx, chatID, "Invalid toggle parameters")
 		return
@@ -564,14 +627,38 @@ func (m *Master) handleToggle(ctx context.Context, chatID int64, parts []string)
 			m.log.Warn("failed to push toggle to agent", "uuid", uuid, "err", err)
 		}
 	}
-	m.tg.SendMessage(ctx, chatID, fmt.Sprintf("Module %s set to %v.", mod, state))
+
+	// Refresh the node panel in place so the ON/OFF buttons update.
+	node, err := m.store.GetNodeByUUID(ctx, uuid)
+	if err != nil {
+		m.tg.SendMessage(ctx, chatID, fmt.Sprintf("Module %s set to %v.", mod, state))
+		return
+	}
+	online := m.srv.IsOnline(uuidBytes)
+	text, kb := ui.NodePanel(node, online)
+	if err := m.tg.EditMessageText(ctx, chatID, msgID, text, &kb); err != nil {
+		m.tg.SendMessageWithKeyboard(ctx, chatID, text, kb)
+	}
 }
 
-// handleRegister parses a SENTINEL-REG: registration blob.
+// extractRegBlob pulls the SENTINEL-REG: blob out of a raw message. The
+// message may be "/register SENTINEL-REG:...", a bare "SENTINEL-REG:...",
+// or have surrounding whitespace/newlines. Returns the text from the
+// prefix onward so protocol.Decode (which requires the string to start
+// with the prefix) accepts it. If the prefix is absent, returns the
+// trimmed input unchanged (Decode will then produce a clear error).
+func extractRegBlob(text string) string {
+	s := strings.TrimSpace(text)
+	if idx := strings.Index(s, protocol.RegPrefix); idx >= 0 {
+		return strings.TrimSpace(s[idx:])
+	}
+	return s
+}
+
 func (m *Master) handleRegister(chatID int64, text string) {
 	ctx := context.Background()
 
-	reg, err := protocol.Decode(text)
+	reg, err := protocol.Decode(extractRegBlob(text))
 	if err != nil {
 		m.tg.SendMessage(ctx, chatID, "Invalid registration: "+err.Error())
 		return
@@ -688,8 +775,95 @@ func parseUUID(s string) [ewp.UUIDLen]byte {
 	return uuid
 }
 
-func uuidToHex(u [ewp.UUIDLen]byte) string {
-	return fmt.Sprintf("%x", u[:])
+// uuidCanonical formats 16 UUID bytes in the canonical hyphenated form
+// (8-4-4-4-12), matching what the registration blob stores in the DB.
+// Using this consistently avoids the mismatch between the hyphenated
+// string from registration and the raw bytes from the EWP handshake.
+func uuidCanonical(u [ewp.UUIDLen]byte) string {
+	return fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:16])
+}
+
+// extractScamScore returns a normalised 0-100 risk score from the quality
+// Score map. Sources report in different formats, so it tries them in
+// priority order and scales to 0-100:
+//   - Scamalytics / IPQS / AbuseIPDB / IP2Location: integer 0-100
+//   - ipapi abuser_score: float 0.0-1.0 (e.g. "0.0868 (High)") → ×100
+//
+// Returns 0 if no source yields a parseable number.
+func extractScamScore(score map[string]*string) int {
+	get := func(k string) string {
+		if v, ok := score[k]; ok && v != nil {
+			return *v
+		}
+		return ""
+	}
+	// Commercial 0-100 sources first (present only with API keys).
+	for _, k := range []string{"SCAMALYTICS", "IPQS", "AbuseIPDB", "IP2LOCATION"} {
+		if s := get(k); s != "" {
+			if n, ok := parseLeadingFloat(s); ok {
+				return clampScore(n)
+			}
+		}
+	}
+	// Free ipapi abuser_score is a 0.0-1.0 fraction → scale to 0-100.
+	if s := get("ipapi"); s != "" {
+		if n, ok := parseLeadingFloat(s); ok {
+			if n <= 1.0 {
+				n *= 100
+			}
+			return clampScore(n)
+		}
+	}
+	return 0
+}
+
+// parseLeadingFloat parses the leading numeric part of a string like
+// "0.0868 (High)" or "37%" → 0.0868 / 37.
+func parseLeadingFloat(s string) (float64, bool) {
+	s = strings.TrimSpace(s)
+	end := 0
+	for end < len(s) {
+		c := s[end]
+		if (c >= '0' && c <= '9') || c == '.' || (end == 0 && (c == '-' || c == '+')) {
+			end++
+			continue
+		}
+		break
+	}
+	if end == 0 {
+		return 0, false
+	}
+	f, err := strconv.ParseFloat(s[:end], 64)
+	if err != nil {
+		return 0, false
+	}
+	return f, true
+}
+
+func clampScore(f float64) int {
+	n := int(f + 0.5)
+	if n < 0 {
+		n = 0
+	}
+	if n > 100 {
+		n = 100
+	}
+	return n
+}
+
+// unwrapResultData extracts the inner payload from a ctrl.Result envelope
+// ({ok, msg, data}). Agent command results wrap their real payload under
+// "data"; the quality/report handlers need that inner JSON, not the
+// envelope. If the input is not an envelope with a "data" field, the
+// original bytes are returned unchanged.
+func unwrapResultData(raw json.RawMessage) json.RawMessage {
+	var env struct {
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &env); err == nil && len(env.Data) > 0 {
+		return env.Data
+	}
+	return raw
 }
 
 // ---------------------------------------------------------------------------
@@ -703,7 +877,7 @@ type masterHandler struct {
 
 func (h *masterHandler) OnHello(uuid [ewp.UUIDLen]byte, hd ctrl.HelloData) {
 	ctx := context.Background()
-	uuidStr := uuidToHex(uuid)
+	uuidStr := uuidCanonical(uuid)
 
 	// Try to find the node by UUID. If it exists, update its info.
 	// If it doesn't exist (unregistered), log a warning.
@@ -735,7 +909,7 @@ func (h *masterHandler) OnHello(uuid [ewp.UUIDLen]byte, hd ctrl.HelloData) {
 
 func (h *masterHandler) OnHeartbeat(uuid [ewp.UUIDLen]byte) {
 	ctx := context.Background()
-	uuidStr := uuidToHex(uuid)
+	uuidStr := uuidCanonical(uuid)
 
 	// Update last_seen only (lightweight).
 	node, err := h.m.store.GetNodeByUUID(ctx, uuidStr)
@@ -750,22 +924,24 @@ func (h *masterHandler) OnHeartbeat(uuid [ewp.UUIDLen]byte) {
 
 func (h *masterHandler) OnResult(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) {
 	h.m.log.Info("command result received",
-		"uuid", uuidToHex(uuid), "id", ev.ID,
+		"uuid", uuidCanonical(uuid), "id", ev.ID,
 		"data_len", len(ev.Data))
 }
 
 func (h *masterHandler) OnQuality(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) {
 	ctx := context.Background()
-	uuidStr := uuidToHex(uuid)
+	uuidStr := uuidCanonical(uuid)
 
 	h.m.log.Info("quality result received", "uuid", uuidStr,
 		"data_len", len(ev.Data))
 
+	// The event payload is a ctrl.Result envelope: {ok, msg, data}. The
+	// actual quality JSON is nested under .data — unwrap it first.
+	qualityJSON := unwrapResultData(ev.Data)
+
 	// Parse quality result to extract key metrics for trend logging.
 	var qr struct {
-		Score struct {
-			SCAMALYTICS *string `json:"SCAMALYTICS"`
-		} `json:"Score"`
+		Score map[string]*string `json:"Score"`
 		Media struct {
 			Youtube struct {
 				Status *string `json:"Status"`
@@ -779,7 +955,7 @@ func (h *masterHandler) OnQuality(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) 
 			} `json:"ChatGPT"`
 		} `json:"Media"`
 	}
-	if err := json.Unmarshal(ev.Data, &qr); err != nil {
+	if err := json.Unmarshal(qualityJSON, &qr); err != nil {
 		h.m.log.Warn("failed to parse quality result", "err", err)
 		return
 	}
@@ -790,11 +966,10 @@ func (h *masterHandler) OnQuality(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) 
 		return
 	}
 
-	// Extract metrics.
-	scamScore := 0
-	if qr.Score.SCAMALYTICS != nil {
-		fmt.Sscanf(*qr.Score.SCAMALYTICS, "%d", &scamScore)
-	}
+	// Extract a 0-100 risk score, preferring commercial sources but
+	// falling back to the free ones so the trend is not always 0 when no
+	// API keys are configured.
+	scamScore := extractScamScore(qr.Score)
 	googStatus := ptrStrOr(qr.Media.Youtube.Region, "")
 	if qr.Media.Youtube.Status != nil {
 		googStatus = *qr.Media.Youtube.Status
@@ -843,7 +1018,7 @@ func (h *masterHandler) OnQuality(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) 
 
 func (h *masterHandler) OnReport(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) {
 	ctx := context.Background()
-	uuidStr := uuidToHex(uuid)
+	uuidStr := uuidCanonical(uuid)
 
 	h.m.log.Info("report received", "uuid", uuidStr)
 
@@ -855,24 +1030,140 @@ func (h *masterHandler) OnReport(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) {
 	var chatID int64
 	fmt.Sscanf(node.ChatID, "%d", &chatID)
 	if chatID != 0 {
-		h.m.tg.SendMessage(ctx, chatID, string(ev.Data))
+		h.m.tg.SendMessage(ctx, chatID, "*Report: "+node.NodeName+"*\n```\n"+resultText(ev.Data)+"\n```")
 	}
 }
 
+// resultText pulls the human-readable text out of a ctrl.Result envelope.
+// A report/log payload carries its text in "msg" (and sometimes "data").
+func resultText(raw json.RawMessage) string {
+	var env struct {
+		Msg  string          `json:"msg"`
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &env); err != nil {
+		return string(raw)
+	}
+	// Prefer data if it's a JSON string, else msg.
+	if len(env.Data) > 0 {
+		var s string
+		if json.Unmarshal(env.Data, &s) == nil && s != "" {
+			return s
+		}
+	}
+	if env.Msg != "" {
+		return env.Msg
+	}
+	return string(raw)
+}
+
 func (h *masterHandler) OnLog(uuid [ewp.UUIDLen]byte, ev ctrl.EventMessage) {
-	h.m.log.Debug("log received from agent",
-		"uuid", uuidToHex(uuid), "data_len", len(ev.Data))
+	ctx := context.Background()
+	uuidStr := uuidCanonical(uuid)
+	h.m.log.Info("log received from agent", "uuid", uuidStr, "data_len", len(ev.Data))
+
+	node, err := h.m.store.GetNodeByUUID(ctx, uuidStr)
+	if err != nil || h.m.tg == nil || node.ChatID == "" {
+		return
+	}
+	var chatID int64
+	fmt.Sscanf(node.ChatID, "%d", &chatID)
+	if chatID != 0 {
+		h.m.tg.SendMessage(ctx, chatID, "*Logs: "+node.NodeName+"*\n```\n"+resultText(ev.Data)+"\n```")
+	}
 }
 
 func (h *masterHandler) OnDisconnect(uuid [ewp.UUIDLen]byte) {
-	h.m.log.Info("agent went offline", "uuid", uuidToHex(uuid))
+	h.m.log.Info("agent went offline", "uuid", uuidCanonical(uuid))
 }
 
 // buildQualityTelegramReport formats a brief Telegram message from a
 // quality check result for the node owner.
+// buildQualityTelegramReport formats the quality JSON into a compact,
+// readable Telegram report (not a raw JSON dump). `data` is the ctrl.Result
+// envelope; the quality JSON is unwrapped from its .data field.
 func buildQualityTelegramReport(node *store.Node, data json.RawMessage) string {
-	return fmt.Sprintf("*Quality Report: %s*\n```\n%s\n```",
-		node.NodeName, string(data))
+	var q struct {
+		Info struct {
+			ASN          *string `json:"ASN"`
+			Organization *string `json:"Organization"`
+			TimeZone     *string `json:"TimeZone"`
+			Region       struct {
+				Name *string `json:"Name"`
+			} `json:"Region"`
+			Continent struct {
+				Name *string `json:"Name"`
+			} `json:"Continent"`
+		} `json:"Info"`
+		Score map[string]*string `json:"Score"`
+		Media map[string]struct {
+			Status *string `json:"Status"`
+			Region *string `json:"Region"`
+		} `json:"Media"`
+		Mail struct {
+			Port25       *bool `json:"Port25"`
+			DNSBlacklist struct {
+				Total       int `json:"Total"`
+				Clean       int `json:"Clean"`
+				Marked      int `json:"Marked"`
+				Blacklisted int `json:"Blacklisted"`
+			} `json:"DNSBlacklist"`
+		} `json:"Mail"`
+	}
+	if err := json.Unmarshal(unwrapResultData(data), &q); err != nil {
+		// Fallback: at least don't crash — show a short note.
+		return fmt.Sprintf("*Quality Report: %s*\n(could not parse result)", node.NodeName)
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "*Quality Report: %s*\n", node.NodeName)
+
+	// Info
+	fmt.Fprintf(&b, "\n*Info*\n")
+	fmt.Fprintf(&b, "ASN: %s\n", ptrStrOr(q.Info.ASN, "N/A"))
+	fmt.Fprintf(&b, "Org: %s\n", ptrStrOr(q.Info.Organization, "N/A"))
+	fmt.Fprintf(&b, "Region: %s / %s\n",
+		ptrStrOr(q.Info.Region.Name, "N/A"), ptrStrOr(q.Info.Continent.Name, "N/A"))
+	fmt.Fprintf(&b, "TimeZone: %s\n", ptrStrOr(q.Info.TimeZone, "N/A"))
+
+	// Score (only non-null sources)
+	fmt.Fprintf(&b, "\n*Risk Score*\n")
+	scoreOrder := []string{"SCAMALYTICS", "IPQS", "AbuseIPDB", "IP2LOCATION", "DBIP", "ipapi"}
+	any := false
+	for _, k := range scoreOrder {
+		if v, ok := q.Score[k]; ok && v != nil && *v != "" {
+			fmt.Fprintf(&b, "%s: %s\n", k, *v)
+			any = true
+		}
+	}
+	if !any {
+		fmt.Fprintf(&b, "(no scores — configure API keys)\n")
+	}
+
+	// Media
+	fmt.Fprintf(&b, "\n*Streaming / AI*\n")
+	mediaOrder := []string{"Netflix", "Youtube", "ChatGPT", "DisneyPlus", "AmazonPrimeVideo", "TikTok", "Reddit"}
+	for _, k := range mediaOrder {
+		if m, ok := q.Media[k]; ok {
+			status := ptrStrOr(m.Status, "?")
+			region := ptrStrOr(m.Region, "")
+			if region != "" && region != "N/A" {
+				fmt.Fprintf(&b, "%s: %s (%s)\n", k, status, region)
+			} else {
+				fmt.Fprintf(&b, "%s: %s\n", k, status)
+			}
+		}
+	}
+
+	// Mail
+	p25 := "no"
+	if q.Mail.Port25 != nil && *q.Mail.Port25 {
+		p25 = "yes"
+	}
+	fmt.Fprintf(&b, "\n*Mail*\nPort25: %s | DNSBL: %d/%d clean, %d blacklisted\n",
+		p25, q.Mail.DNSBlacklist.Clean, q.Mail.DNSBlacklist.Total, q.Mail.DNSBlacklist.Blacklisted)
+
+	return b.String()
 }
 
 func ptrStrOr(s *string, fallback string) string {

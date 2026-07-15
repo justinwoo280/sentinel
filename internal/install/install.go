@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,14 +14,15 @@ import (
 	"github.com/justinwoo280/sentinel/internal/config"
 	"github.com/justinwoo280/sentinel/internal/geo"
 	"github.com/justinwoo280/sentinel/internal/protocol"
+	"golang.org/x/term"
 )
 
 // Installer collects user input and generates agent files.
 type Installer struct {
-	region      string
-	regionName  string
-	lat         float64
-	lon         float64
+	region      string // country ID, e.g. "DE"
+	state       string // state ID, e.g. "NW" (or "Default")
+	city        string // city ID, e.g. "Aachen"
+	regionName  string // display name, e.g. "Germany (德国) — Aachen (亚琛)"
 	keywordFile string
 	masterAddr  string
 	masterPub   string
@@ -35,6 +37,25 @@ type Installer struct {
 // Run executes the interactive installation. The reader/writer are
 // injectable for testing.
 func Run(cfgPath string) error {
+	// Guard: this command reads interactively from stdin (region, master
+	// address, etc.). If stdin is not a terminal — e.g. this was invoked
+	// via "curl ... | sh" where the pipe's stdin is already exhausted by
+	// the time the shell exec's this binary — every prompt would silently
+	// read EOF and fall through to its default, silently installing with
+	// the WRONG region/settings instead of asking the user anything.
+	// Failing loudly here is much safer than that. scripts/install.sh
+	// works around this for the common curl-pipe case by reopening
+	// stdin from /dev/tty before exec'ing this command; this check is
+	// the defense-in-depth backstop for any other caller.
+	if !term.IsTerminal(int(os.Stdin.Fd())) {
+		return fmt.Errorf(
+			"install: stdin is not a terminal — this command requires an interactive session.\n" +
+				"If you ran this via 'curl ... | sh', that pipe consumes stdin before this\n" +
+				"program starts, so prompts can't be answered. Re-run either as:\n" +
+				"  sh -c \"$(curl -fsSL <install.sh-url>)\"\n" +
+				"or attach an interactive terminal (e.g. 'docker run -it ...')")
+	}
+
 	i := &Installer{}
 
 	// Guard: if an agent config already exists, warn before overwriting.
@@ -89,71 +110,192 @@ func Run(cfgPath string) error {
 	return nil
 }
 
+// selectRegion walks the full 4-level region hierarchy (continent ->
+// country -> state -> city), matching the original project's install
+// flow exactly. A level is skipped automatically when it has exactly one
+// option (e.g. most countries only have a "Default" state); "0" goes
+// back to the previous level. The resolved base coordinates, lang_params,
+// and trust whitelist are NOT stored here — they are re-resolved at agent
+// startup from the embedded city JSON (single source of truth).
 func (i *Installer) selectRegion() error {
-	fmt.Println("\nSelect region:")
-	regions := []struct {
-		code string
-		name string
-	}{
-		{"JP", "Japan (日本)"},
-		{"US", "United States"},
-		{"HK", "Hong Kong"},
-		{"KR", "Korea"},
-		{"SG", "Singapore"},
-		{"DE", "Germany"},
-		{"UK", "United Kingdom"},
-		{"CA", "Canada"},
-		{"AU", "Australia"},
+	m, err := geo.LoadMap()
+	if err != nil {
+		return fmt.Errorf("install: load region data: %w", err)
 	}
-	for idx, r := range regions {
-		fmt.Printf("  %d. %s (%s)\n", idx+1, r.name, r.code)
-	}
-	fmt.Print("\nEnter region number: ")
-
-	var choice int
-	fmt.Scanln(&choice)
-	if choice < 1 || choice > len(regions) {
-		return fmt.Errorf("invalid region selection: %d", choice)
+	if len(m.Continents) == 0 {
+		return fmt.Errorf("install: region data has no continents")
 	}
 
-	r := regions[choice-1]
-	i.region = r.code
-	i.regionName = r.name
-	i.keywordFile = "kw_" + r.code + ".txt"
+	var cont geo.Continent
+	var country geo.Country
+	var state geo.State
+	var city geo.City
 
-	// Look up region from embedded map data.
-	if m, err := geo.LoadMap(); err == nil {
-		for _, cont := range m.Continents {
-			for _, country := range cont.Countries {
-				if country.ID == r.code {
-					i.regionName = country.Name
-					if country.KeywordFile != "" {
-						i.keywordFile = country.KeywordFile
-					}
-					break
-				}
+	const (
+		stepContinent = 0
+		stepCountry   = 1
+		stepState     = 2
+		stepCity      = 3
+		stepDone      = 4
+	)
+	step := stepContinent
+
+	for step != stepDone {
+		switch step {
+		case stepContinent:
+			fmt.Println("\n[1/4] Select target continent:")
+			for idx, c := range m.Continents {
+				fmt.Printf("  %d. %s\n", idx+1, c.Name)
 			}
+			choice, err := promptChoice("Enter choice", len(m.Continents), false)
+			if err != nil {
+				return err
+			}
+			cont = m.Continents[choice-1]
+			step = stepCountry
+
+		case stepCountry:
+			if len(cont.Countries) == 0 {
+				return fmt.Errorf("install: continent %s has no countries", cont.ID)
+			}
+			fmt.Printf("\n[2/4] Select country in %s:\n", cont.Name)
+			fmt.Println("  0. Back")
+			for idx, c := range cont.Countries {
+				fmt.Printf("  %d. %s (%s)\n", idx+1, c.Name, c.ID)
+			}
+			choice, err := promptChoice("Enter choice", len(cont.Countries), true)
+			if err != nil {
+				return err
+			}
+			if choice == 0 {
+				step = stepContinent
+				continue
+			}
+			country = cont.Countries[choice-1]
+			step = stepState
+
+		case stepState:
+			if len(country.States) == 0 {
+				return fmt.Errorf("install: country %s has no states defined", country.ID)
+			}
+			if len(country.States) == 1 {
+				state = country.States[0]
+				fmt.Printf("\n[3/4] %s has a single region (%s) — auto-selected.\n",
+					country.Name, state.Name)
+				step = stepCity
+				continue
+			}
+			fmt.Printf("\n[3/4] Select state/province in %s:\n", country.Name)
+			fmt.Println("  0. Back")
+			for idx, s := range country.States {
+				fmt.Printf("  %d. %s\n", idx+1, s.Name)
+			}
+			choice, err := promptChoice("Enter choice", len(country.States), true)
+			if err != nil {
+				return err
+			}
+			if choice == 0 {
+				step = stepCountry
+				continue
+			}
+			state = country.States[choice-1]
+			step = stepCity
+
+		case stepCity:
+			if len(state.Cities) == 0 {
+				return fmt.Errorf("install: state %s/%s has no cities defined", country.ID, state.ID)
+			}
+			if len(state.Cities) == 1 {
+				city = state.Cities[0]
+				fmt.Printf("\n[4/4] %s has a single city (%s) — auto-selected.\n",
+					state.Name, city.Name)
+				step = stepDone
+				continue
+			}
+			fmt.Printf("\n[4/4] Select city:\n")
+			fmt.Println("  0. Back")
+			for idx, c := range state.Cities {
+				fmt.Printf("  %d. %s\n", idx+1, c.Name)
+			}
+			choice, err := promptChoice("Enter choice", len(state.Cities), true)
+			if err != nil {
+				return err
+			}
+			if choice == 0 {
+				if len(country.States) == 1 {
+					step = stepCountry
+				} else {
+					step = stepState
+				}
+				continue
+			}
+			city = state.Cities[choice-1]
+			step = stepDone
 		}
 	}
 
-	// Default coordinates.
-	coords := map[string][2]float64{
-		"JP": {35.6762, 139.6503},
-		"US": {40.7128, -74.0060},
-		"HK": {22.3193, 114.1694},
-		"KR": {37.5665, 126.9780},
-		"SG": {1.3521, 103.8198},
-		"DE": {52.5200, 13.4050},
-		"UK": {51.5074, -0.1278},
-		"CA": {45.4215, -75.6972},
-		"AU": {-33.8688, 151.2093},
-	}
-	if c, ok := coords[r.code]; ok {
-		i.lat = c[0]
-		i.lon = c[1]
+	i.region = country.ID
+	i.state = state.ID
+	i.city = city.ID
+	i.regionName = fmt.Sprintf("%s — %s", country.Name, city.Name)
+	i.keywordFile = country.KeywordFile
+	if i.keywordFile == "" {
+		i.keywordFile = "kw_" + country.ID + ".txt"
 	}
 
+	// Fail fast if the selected city has no region JSON — better to catch
+	// a data/map.json inconsistency now than at agent runtime.
+	if _, err := geo.LoadCityRegion(i.region, i.state, i.city); err != nil {
+		return fmt.Errorf("install: selected region has no data (%s/%s/%s): %w",
+			i.region, i.state, i.city, err)
+	}
+
+	fmt.Printf("\nRegion locked: %s\n", i.regionName)
 	return nil
+}
+
+// promptChoice prints a prompt, reads a line from stdin, and validates it
+// against [1,max] (or 0 if allowBack). Empty input defaults to 1
+// (matching the original installer's convenience default). Re-prompts on
+// invalid input.
+func promptChoice(label string, max int, allowBack bool) (int, error) {
+	lo := 1
+	if allowBack {
+		lo = 0
+	}
+	for {
+		fmt.Printf("%s [%d-%d] (default 1): ", label, lo, max)
+		var line string
+		fmt.Scanln(&line)
+		n, err := parseChoice(line, max, allowBack)
+		if err != nil {
+			fmt.Printf("Invalid input: %v. Try again.\n", err)
+			continue
+		}
+		return n, nil
+	}
+}
+
+// parseChoice is the pure, testable validation core of promptChoice: it
+// takes the raw input string and returns the validated choice, or an
+// error. Empty input defaults to "1". If allowBack, "0" is accepted and
+// returned as 0 (meaning "go back").
+func parseChoice(raw string, max int, allowBack bool) (int, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		raw = "1"
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, fmt.Errorf("%q is not a number", raw)
+	}
+	if allowBack && n == 0 {
+		return 0, nil
+	}
+	if n < 1 || n > max {
+		return 0, fmt.Errorf("%d is out of range [1-%d]", n, max)
+	}
+	return n, nil
 }
 
 func (i *Installer) inputMaster() error {
@@ -185,8 +327,8 @@ func (i *Installer) buildConfig() config.AgentConfig {
 	cfg.Node.Alias = i.alias
 	cfg.Region.Code = i.region
 	cfg.Region.Name = i.regionName
-	cfg.Region.Lat = i.lat
-	cfg.Region.Lon = i.lon
+	cfg.Region.State = i.state
+	cfg.Region.City = i.city
 	cfg.Region.KeywordFile = i.keywordFile
 	cfg.Modules = config.ModulesConfig{Google: i.google, Trust: i.trust}
 	cfg.Master = config.MasterConn{

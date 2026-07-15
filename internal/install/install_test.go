@@ -2,8 +2,28 @@ package install
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+// TestRunRefusesNonInteractiveStdin is a regression test for the bug
+// where "curl ... | sh" (or any non-terminal stdin) would cause every
+// interactive prompt to silently read EOF and fall through to its
+// default, installing a node with the WRONG region and no master
+// address, instead of asking the user anything. Run() must refuse
+// outright with a clear error instead of racing through defaults.
+// Test binaries normally run with a non-terminal stdin, so this
+// reliably exercises the check without needing to fake a real TTY.
+func TestRunRefusesNonInteractiveStdin(t *testing.T) {
+	dir := t.TempDir()
+	err := Run(filepath.Join(dir, "agent.yaml"))
+	if err == nil {
+		t.Fatal("expected an error when stdin is not a terminal, got nil")
+	}
+	if !strings.Contains(err.Error(), "not a terminal") {
+		t.Fatalf("expected a clear 'not a terminal' error, got: %v", err)
+	}
+}
 
 func TestGenerateNodeName(t *testing.T) {
 	name := generateNodeName()
@@ -19,9 +39,9 @@ func TestGenerateNodeName(t *testing.T) {
 func TestBuildConfig(t *testing.T) {
 	i := &Installer{
 		region:      "JP",
-		regionName:  "Japan",
-		lat:         35.6762,
-		lon:         139.6503,
+		state:       "Default",
+		city:        "Tokyo",
+		regionName:  "Japan — Tokyo",
 		keywordFile: "kw_JP.txt",
 		masterAddr:  "master.example.com:8443",
 		masterPub:   "testpubkey",
@@ -40,6 +60,12 @@ func TestBuildConfig(t *testing.T) {
 	if cfg.Region.Code != "JP" {
 		t.Fatalf("region code: got %q, want JP", cfg.Region.Code)
 	}
+	if cfg.Region.State != "Default" {
+		t.Fatalf("region state: got %q, want Default", cfg.Region.State)
+	}
+	if cfg.Region.City != "Tokyo" {
+		t.Fatalf("region city: got %q, want Tokyo", cfg.Region.City)
+	}
 	if cfg.Master.Addr != "master.example.com:8443" {
 		t.Fatalf("master addr: got %q, want master.example.com:8443", cfg.Master.Addr)
 	}
@@ -56,9 +82,9 @@ func TestWriteConfig(t *testing.T) {
 	path := filepath.Join(dir, "agent.yaml")
 
 	i := &Installer{
-		region: "US", regionName: "United States",
-		lat: 40.7, lon: -74.0, keywordFile: "kw_US.txt",
-		masterAddr: "m:8443", masterPub: "key", uuid: "uuid",
+		region: "US", state: "CA", city: "Los_Angeles", regionName: "United States — Los Angeles",
+		keywordFile: "kw_US.txt",
+		masterAddr:  "m:8443", masterPub: "key", uuid: "uuid",
 		nodeName: "node", google: true, trust: true, ota: true,
 	}
 	cfg := i.buildConfig()

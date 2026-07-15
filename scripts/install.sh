@@ -119,7 +119,34 @@ chmod 0755 /etc/sentinel /var/log/sentinel
 chmod 0700 /var/lib/sentinel
 
 # ---- launch interactive installer ----------------------------------------
+# When this script itself is run as "curl ... | sh", sh's stdin is the
+# pipe carrying this script's own source. By the time we get here, curl
+# has already sent everything and closed, so stdin is exhausted (EOF) —
+# any interactive prompt in the installer below would silently read EOF
+# and fall through to defaults instead of asking the user anything.
+#
+# Fix: if stdin isn't already a terminal, reopen it from the controlling
+# terminal (/dev/tty) before exec'ing the installer, so prompts work
+# correctly regardless of whether this script was invoked via a pipe or
+# "sh -c \"\$(curl ...)\"". Note: testing /dev/tty must NOT use a bare
+# "exec N</dev/tty" here — POSIX shells (dash in particular) treat a
+# failing redirection on a bare exec as fatal to the whole script, even
+# inside an "if" condition. Testing with an ordinary command first avoids
+# that trap.
 info "launching interactive installer..."
+if [ -t 0 ]; then
+	: # stdin is already a real terminal — nothing to do
+elif (true < /dev/tty) 2>/dev/null; then
+	exec < /dev/tty
+else
+	echo "" >&2
+	echo "warning: no controlling terminal detected; the interactive installer" >&2
+	echo "below requires one to answer prompts (region, master address, etc.)." >&2
+	echo "If this hangs or fails, re-run with:" >&2
+	echo "  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/${REPO}/main/scripts/install.sh)\"" >&2
+	echo "" >&2
+fi
+
 if [ -n "$ROLE" ]; then
 	exec "$BIN_PATH" install --role "$ROLE"
 else

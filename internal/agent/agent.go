@@ -19,6 +19,7 @@ import (
 	"github.com/justinwoo280/sentinel/internal/agent/ota"
 	"github.com/justinwoo280/sentinel/internal/config"
 	"github.com/justinwoo280/sentinel/internal/ctrl"
+	"github.com/justinwoo280/sentinel/internal/geo"
 	"github.com/justinwoo280/sentinel/internal/geoip"
 	"github.com/justinwoo280/sentinel/internal/netx"
 )
@@ -64,12 +65,19 @@ func New(cfg config.AgentConfig, cfgPath string, log *slog.Logger) (*Agent, erro
 		publicIP = "unknown"
 	}
 
+	// Capture every subsequent log record (from this point on, including
+	// google/trust/quality/scheduler/ctrl) into a ring buffer so the
+	// Master's `log` command has real content to show, not just the one
+	// hardcoded "report generated" entry Report() used to push.
+	logBuf := agentlog.New(500)
+	log = slog.New(agentlog.NewHandler(log.Handler(), logBuf))
+
 	a := &Agent{
 		cfg:       cfg,
 		cfgPath:   cfgPath,
 		log:       log,
 		publicIP:  publicIP,
-		logBuf:    agentlog.New(500),
+		logBuf:    logBuf,
 		startTime: time.Now(),
 	}
 
@@ -81,16 +89,31 @@ func New(cfg config.AgentConfig, cfgPath string, log *slog.Logger) (*Agent, erro
 			DBPath:         cfg.GeoIP.DBPath,
 			UpdateInterval: time.Duration(cfg.GeoIP.UpdateInterval),
 			DownloadURL:    cfg.GeoIP.DownloadURL,
-		}, log)
+		}, log.With("module", "geoip"))
 		if err != nil {
 			log.Warn("geoip manager init failed", "err", err)
 		}
 		a.geoip = gm
 	}
 
-	a.google = modules.NewGoogle(cfg, log, publicIP)
-	a.trust = modules.NewTrust(cfg, log, publicIP)
-	a.scheduler = NewScheduler(cfg, a, log)
+	// Resolve the selected city's region data once at startup (base
+	// coordinates, lang_params, trust whitelist). This is the single
+	// source of truth for geo data; the config only stores the three
+	// short IDs (country/state/city), never the resolved values, so
+	// there is nothing here to drift out of sync on disk.
+	city, err := geo.LoadCityRegion(cfg.Region.Code, cfg.Region.State, cfg.Region.City)
+	if err != nil {
+		return nil, fmt.Errorf("agent: load city region %s/%s/%s: %w",
+			cfg.Region.Code, cfg.Region.State, cfg.Region.City, err)
+	}
+	log.Info("region data loaded", "region_name", city.RegionName,
+		"lat", city.GoogleModule.BaseLat, "lon", city.GoogleModule.BaseLon,
+		"lang_params", city.GoogleModule.LangParams,
+		"trust_urls", len(city.TrustModule.WhiteURLs))
+
+	a.google = modules.NewGoogle(cfg, log.With("module", "google"), publicIP, city)
+	a.trust = modules.NewTrust(cfg, log.With("module", "trust"), publicIP, city)
+	a.scheduler = NewScheduler(cfg, a, log.With("module", "scheduler"))
 	return a, nil
 }
 
@@ -119,7 +142,7 @@ func (a *Agent) Start(ctx context.Context) error {
 			MinBackoff:   time.Duration(a.cfg.Reconnect.MinBackoff),
 			MaxBackoff:   time.Duration(a.cfg.Reconnect.MaxBackoff),
 			Hello:        hello,
-		}, a, a.log)
+		}, a, a.log.With("module", "ctrl"))
 		if err != nil {
 			return fmt.Errorf("agent: create control client: %w", err)
 		}
@@ -235,7 +258,7 @@ func (a *Agent) Report(ctx context.Context) ctrl.Result {
 		cfg.Modules.Google, cfg.Modules.Trust,
 	)
 
-	a.logBuf.Push("INFO", "report", "report generated")
+	a.log.Info("report generated", "module", "report")
 	return ctrl.Result{
 		OK:  true,
 		Msg: report,

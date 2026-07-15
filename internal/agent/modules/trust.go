@@ -20,10 +20,14 @@ type TrustModule struct {
 	cfg      config.AgentConfig
 	log      *slog.Logger
 	publicIP string
+	city     *geo.CityRegion // resolved once at Agent startup; nil-safe (falls back)
 }
 
-func NewTrust(cfg config.AgentConfig, log *slog.Logger, publicIP string) *TrustModule {
-	return &TrustModule{cfg: cfg, log: log, publicIP: publicIP}
+// NewTrust creates a TrustModule. city is the resolved city-level region
+// data (trust_module.white_urls) for cfg.Region.Code/State/City, loaded
+// once at Agent startup via geo.LoadCityRegion.
+func NewTrust(cfg config.AgentConfig, log *slog.Logger, publicIP string, city *geo.CityRegion) *TrustModule {
+	return &TrustModule{cfg: cfg, log: log, publicIP: publicIP, city: city}
 }
 
 // fallbackURLs are used when region data has no whitelist.
@@ -34,11 +38,10 @@ var fallbackURLs = []string{
 }
 
 func (m *TrustModule) Run(ctx context.Context) ctrl.Result {
-	// 1. Load whitelist URLs.
-	rd, err := geo.LoadRegion(m.cfg.Region.Code)
+	// 1. Load whitelist URLs (city-level, real regional sites).
 	urls := fallbackURLs
-	if err == nil && len(rd.TrustModule.WhiteURLs) > 0 {
-		urls = rd.TrustModule.WhiteURLs
+	if m.city != nil && len(m.city.TrustModule.WhiteURLs) > 0 {
+		urls = m.city.TrustModule.WhiteURLs
 	}
 
 	// 2. Hash-seeded UA.

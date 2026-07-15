@@ -1,0 +1,55 @@
+{
+  "region_name": "United States - Warrenville",
+  "google_module": {
+    "base_lat": 41.8164,
+    "base_lon": -88.1748,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://news.google.com/rss/articles/CBMijwFBVV95cUxPOFZzZDFWX3J0NzBPRHdEWWhfenRuMnh1dVFueVpnUGJXX1ZTMHFDdWZCTV82czF3clVSQ0NrU196OXlyQXdRWTdhMXJSRHB5UklRNmJCTVNZbmRwNlZKUzkwTlY0UG5YVHFYbHNodGtlcVEzYk9fRkR3X0lpYXZrS1V5blIwOFoxMjk1T0ZOQQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9RLVhuZWtMaENrUGRiRU1LU2tYcjZTdHo0cTBNazc5MVNvT2pncGNLSG9yUnpuVXhZbENXOTV3eGFpMlliUU5LSkJVRHYzYlBTalhwY2JMN0p4UQ?oc=5",
+      "https://news.google.com/rss/articles/CBMidkFVX3lxTE1lTEVJQ3l5VnlPbGV6OFJxenBUaHpYVVJ0dHdMM3JoVmFLaU9GT2dKNkZvYWVsaW1SNDZWWldKN3pjdXNabHRQckxIS29EWXZsSXR5TFF5eTVjZ1NPYmRQbTVTSnA4UnNyVFFsNzZsdzhCdFRGQWc?oc=5",
+      "https://news.google.com/rss/articles/CBMidEFVX3lxTE9xRG9mcmR0WWJlSVlRUENXX0RpTDJneGYwWWw4Qm8xZWdtRG1vWUMwaXVJNkhLNTJaLV80cFZZWDJTNVpnLUpnRmxEM3FvSS13akZVT2lMcVo4U0ZRT2lvREtybFo0OE5LLTJtUEp3VTMycER4?oc=5",
+      "https://www.chase.com/",
+      "https://news.google.com/rss/articles/CBMinwFBVV95cUxOSFloUWxvYXVCZmpLUF83N1NYdVNZR2Vzd1lBWTlfcm1TM191dnFXcG00ZXNvOW1kM3VLYmY0SURjVlZWMTRYUldveTBmYUwtb2s3LXhxbXh3aTZySDJYRUs4WklrcFM3blNuVFNnbEpXTUVTck5DWDl5T0o4SkwtLUNYN1lyRm04SlUxS0NuX1VPMXNHdWx6elBPSTRvRFXSAaQBQVVfeXFMTnhGc0xPQldnX0RrZkJPZzMtdUhQcHpyS2hFRExVaEh5MmM5UEtRWmR5VmNWSFFuVWhVV1VBQWthcTVxbWJHT1BBSFQ1VWdTMmZvZ3JvbXlyNThGNWhQY1BDdTdTYUd0Uk41TnNEaUxsOUZxZWY5cjlwOVQ0QmxMVG5lZlVlR0JrckRhaE1BaHdNZGRmYVN2ZXVGcnRHa2w4SnNvSGc?oc=5",
+      "https://news.google.com/rss/articles/CBMitwFBVV95cUxQeEVPWE04c1JpNVl5NnhDOU94bDhXd09XUUdpNnoxcDNrQ0g5Tks0UTBqS19PZ0FFb1BfQlBTZnVKM0R3YXYyazJJNTN1cFcwT2V0bUpIS3RWbGJwSVIzNEt2SVFnb0xGRFF3TXNtZnRlVktwRk8wUjlQVW1MbEQ3QktFN3pvRnQ3MzBydDZqSU93S2lfZmpGLU1lTHBCMkQwak5EQjdTcnFybE5yTm1NNGtVMzZoM2s?oc=5",
+      "https://news.google.com/rss/articles/CBMickFVX3lxTE9KbjFLTHhYak54U3Rzelo4LWtLamNYeDJFaktEMUZzbF9Tc2NRVlNlc0YtTU9BYi1DRzM5LVRjcW14WW1NbmJDUDI2dUQ1YkpxanJHNXM3bkZoU0dDR29TS0Izem0wWUJfVnlVSjZyVzRkZw?oc=5",
+      "https://news.google.com/rss/articles/CBMiywFBVV95cUxQN194ZnktYjBjY3pQVUVxeTd2cDJIcU5iM1F2QzJRMjBYZnNrTTk5Z3RWNll6U1g2VFdaTkU2T0JLX25WWUVRQ3RDSUd0MDFSQVFHa3ZSdEd6MXFEUmxCdFNNUkdFYmM1OU52SEkyQW0xVGhvM2pRQ3lNTHBJT01qNmdPRWg0Mm5JSUkyWi1jbWcydXdtNFhwUWg2Wl9paWs1dFhFQ3d6ejJZYUkwUEJSY2xPUkJGMFYtekVLeGxnV0pwN25WdUZhd1NDcw?oc=5",
+      "https://news.google.com/rss/articles/CBMivwFBVV95cUxQeFhIc1R6VDVMZjhwZTR4bnplNE5HYWxFUmV1SkVpeXdDQXN2WDZHOU92Z0E1Z3Awd2piS2NaSXFiNTNDRlJLaEgyQV9GLXFtM1k5QnFOcG1aRkNQcEpibXh2YkcxcHUyb3QyamVQZURxWGVrT1ZuYmVhcG10YmNMeXhHaUp3Zlp4ZUhQdk1nWjdHVE5xRzNUeVc2S3JhVTN6S29Va1o5aFBsLUhMZzB0eENGOHBpMTdINWxqZGtGdw?oc=5",
+      "https://www.cdc.gov/",
+      "https://news.google.com/rss/articles/CBMi4wFBVV95cUxORzR2UjdqTXZOeEVaN2dkalBRTGdNb0wweDN2R0xLTHhKS3kwa2xaX1Q1Y3E4dlZhZTBFYUZmSktWUUtGOU1GSWVQUGRGU2RrWC1uVUdZQWZSaThnTE5Jc1VQWFpqbWpkamRYTWxwblN3YzFTVDA1ZUtUUkFoU1A2YUlaZEpfVnB4ay1URDdoZ0E2MEVTSko4c3J6aUNzYTk1LVhJTUpYaFpPeXRlS2pjQ2JSemNyYWhVODhoRjFLQXZqcTZtTjRkU1NuWjR0YWxocmpndkdRRTBlQWttaWJ3MXhPSQ?oc=5",
+      "https://news.google.com/rss/articles/CBMihgFBVV95cUxOZ01Fbm5jVER1bl9WTFU4Nm5UVk0xUmM3RjVpRFkxTzFEUzk4ZGxCLUJ0blVmM3BpVmlhbnA3TWJVNVVZSkN6VDhjUkpkanZHSjVJcEFXcEVhT3ktczM0TGcwTGc3NEc5MmJTTU5fMmk2Ml9RYkJWLWtVSjdLYVhMeWdnbFQxUQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiugFBVV95cUxNZDhNTnR4bG9PRVJ2VUJzeS01T0NhQVJRcUhYdUFCbEVaZHMxbWVSM1ZFeW5MbGlEaW1SbUNuMlVPVm54dVZ1bmJHalBLR3JfSXNNYjRJTXVCLURsd1U3amNzQkt3UU44UlRDdl81dUs2cGJEaDJIWVJBelMwQUNMMVFZajZ5Vld1NGpiWVFQVTJFY001VHFIRnNsY2FicjZHSW05b3lYTWJybTlEcjVlcGlHQXBpTkVhVmc?oc=5",
+      "https://www.usa.gov/",
+      "https://news.google.com/rss/articles/CBMiswFBVV95cUxQNHQwVjBDSVYwd0o5dFhnX2dxbFVoUEdmWWU4TXlxUlFrUU9BcUl3UDdGYnU5RHIxcUVKbktWUjJXV0pmckt5X3pMbDBQOEtYaGJTeVVTUWFKcWRhV3BCY0hHa3dnbmcxOEJVd0lzblJnMkRRbDIzMHZ3Vm8wVC13M2JqcDgxdkdNYlo3VlNxQjl2WEhIei1IS1Vydlk3U0FVUkIyUVJfSm1QdWQteERIZXdIaw?oc=5",
+      "https://news.google.com/rss/articles/CBMioAFBVV95cUxQQ21FUXg0SU1FeS1mc01mS3NBUGpZd3FwNmVOSjlFYjR0Zm1vLUxQUFFtd3RTQ2NfMFpRZV9QUWd2SXF4Z21RM0Y4NHNUUDRST3RYamFnRXlNQUh2U1ZTMV9sOUxpX0V3czRRYmxFNlNnMFdsZEN6cWdEdEFON1FPR3Q2bE14REtNT1FPaUNaa212YWRpLU9FMzBRRk5WVUI4?oc=5",
+      "https://news.google.com/rss/articles/CBMimAFBVV95cUxPUTV5Z1Z5c3RmcEJTamhYc29hQkQyMkRudDR4c25yOWFLU0FjblFHTVdnS3FNZkNMWEVjSzlja2lINENNcGk2RXVQR1M3QlR2WUl1UDUyekhGTGM3TEV0SVE5Zk82WXpQNmxXOGdYY0Rfa0cyZ0ZYUC1rYlBXUE1kSHVDNENxZFUzLTFmdUtlLTYzOFU0d2t6aQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQTzk5TkVyaXI1Tl9tMUgxc20zOHBTTVk5M1NyX1lJd3MtYnFfVW9xV2dJR1p2Q1RVb3ZqRkRFRXBCM1N0VVdJTlRLT0R6Z0w0U1FLYlhfMXpFWGxFZ2htTmk1UGlmWEJ5THUwVzAwRWU4NUdxVnQzN2pUOENDbTVOekNfcld6R3RWN1h5US1vVkk1QzgtQUlhWXdaYnNvV3VyOFZuODJLcjAwbl94U2Y1cGN6VEJiM1BDTngwQXdoMzQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiggJBVV95cUxOSC1WZ3VveWJfTGpJVnlFREZlcnAxS2sxM3pVME5hbER5dFliV1NsbTJXVlRObFNrUTEtQmpMVkVGc1FDY1hrcFlFczVESWRaY2dpalVsZUREVlZjbFVtZk4zb3BHWEI4bnUyU3pRaGZEQ2pyejFSRWJHNFBjRWdpSDFTaldVQmdwdURST2Z5LXgySm1xQVZvakpIcjZObWZ0aGdTUjlSSlJnbkNqQktXNDJMU05WVkl6X0lld2lXdUEtbzFiel9iR2hHeDJWeC1tdi1jRFNKUHgwMjB5YVFhOFU3NE9ianRtREpGSTEyckVLN3F3bDZEZEZ0dzVRWlRrZUE?oc=5",
+      "https://www.bankofamerica.com/",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9ISkRMWWhPVzJqZFRUYVpidXczbGJXd3lfU2hBY1VqZU5Jb01CRG9TRk9LYnh0aWRzU2g3OUFRUTBMaWEzTjNsRWRKSkxkMEtWeU8zdFVHVk92Zw?oc=5",
+      "https://news.google.com/rss/articles/CBMihwFBVV95cUxQMDF1WGZPdXR0d2swdFdMcW1lTS1xVEZDd3djV2kwZmN2ZTZZamZMZVN3bUluYjlDRDd2X2ZTVlUwaHNlTW9YbmtSRUt5ZVFlZTJfaGVjTE5WbThzbHNlbml1VEFfM0VXRzUzdnhjelRMTnd0cVFGTDd0aWlhS3E5LXFBWWFlWk0?oc=5",
+      "https://news.google.com/rss/articles/CBMinAFBVV95cUxNNGs5TzZDVi1BS1JodjZOdEVDSWhrY0VoQU5VaXNDanFwaEZNNkFaQ3k2V3hkN0M2WUZOZDk3MU1BLUFJVDRqVzcxWkl4SXgyRXFxbWsycVpKNUQ3MUNWNVVoNjdDaVc3QzlvMjVrdWNwWEs3bk5Sa1Brak1WQzRlZ1lpcFZTaHMxdU1rQWNUQTRGRm84cVRyX2NoeWg?oc=5",
+      "https://news.google.com/rss/articles/CBMitwFBVV95cUxNUkJjcm5hZFBLTlhyeEhuRXRWWWt4Q0pzTnZ6UjFLRktjdWEzeUY5eE9zZUNpT3F6bFhRMzVGZUFjc2ptUnMzTE5LcGE4a3FfUm14WmtDNEdxVXRxTVljbjM2Sks4UjZkM2UtanR4TmdEbEEtZmNmTXdrblNzZ3NDLWZ3OHNNM3g2cXVkbi1FQ1hGZ1ZQN2NfY2dlVzVFYW5Hc1gzVTVvVEJ5dW00Z29BTHpLb0JLdDQ?oc=5",
+      "https://news.google.com/rss/articles/CBMinwFBVV95cUxOUUN6RThaYXlIQU9FTlVMeHdKWDc0YnhoSlJvVzJ5ZEozOF9QNDRoZ3Z3NUdzdHYxQlptczU0bWQ4QUM1YUpWR3I4SFNlUG85Y09RUWp3b1Yzc3V1WWMxMG5rVldMTWNLWGwwT2J3V2Jha3pneDd5UnZCQmNQYUxnMlBqNVlBSmF1OUhfRHFOaG1lY2kzSlVoN1d6SmRhcW8?oc=5",
+      "https://www.irs.gov/",
+      "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPWG81Nm9lcGU3TFNkdHpuMW9MX2NFNEhDVFJGeFZ3bjczT0UxeXlYUnNXd3haWl9ISUROOGdjRm9McFA3TjN5d3c0U09mY3JtLUk1T082akRwd0g2OV9IXy1DZ3htR2ZiZnd4WmNtc1l5aGp0cEZIQURPMUNWUW5oRFNPQU9KYlBNdG5hX042TkVuNlBOaUY5R211WHFfaENiWmptUGtRR25WMUJTRmdheWd0YlRWMGdKT3RxM1VJREZ2RnJBRmloR2M2SVpiQ1AzcmRqV0syUjJHWkxCMF9KWjJ3M0tNNVhLcEZyQg?oc=5",
+      "https://news.google.com/rss/articles/CBMitAFBVV95cUxPRDJxdG5EMWFzbXVJM2RVY2RlaEdIQ3o1WnRxU3JYV2drd3RJV2x1Q3dobE5wVHFfOTJ4MElBQ1p1MkVYUDl1RGF3X0h6ckZVNTlwWjFYNXhCT2k3cHlCR2lPLTZBZTdleGY5aEZNaWZGVER6UzZUdm11S2oxOGJWMXpPc0RCQmw3cDc2Y2k0a29CX3pNd3ZOV1BESVlRc3lUVkdocDJXaVd4UkNJbXRrdnEtMWg?oc=5",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE00VzcxcE1JVE9vRUpaczQ2QUFEM3FCR3NUNFZGandiT2NRbkw2ekxTWEs4b1dpV05Zd1MyYkEzNmlMRU9ueGRFZlRpZU5jZVg4V0d1T0N1d0VxQQ?oc=5"
+    ],
+    "static_urls": [
+      "https://www.usps.com/",
+      "https://www.harvard.edu/",
+      "https://www.amazon.com/",
+      "https://www.walmart.com/",
+      "https://www.bankofamerica.com/",
+      "https://www.cdc.gov/",
+      "https://www.usa.gov/",
+      "https://www.target.com/",
+      "https://www.chase.com/",
+      "https://www.irs.gov/"
+    ]
+  }
+}

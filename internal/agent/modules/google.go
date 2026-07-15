@@ -24,10 +24,14 @@ type GoogleModule struct {
 	cfg      config.AgentConfig
 	log      *slog.Logger
 	publicIP string
+	city     *geo.CityRegion // resolved once at Agent startup; nil-safe (falls back)
 }
 
-func NewGoogle(cfg config.AgentConfig, log *slog.Logger, publicIP string) *GoogleModule {
-	return &GoogleModule{cfg: cfg, log: log, publicIP: publicIP}
+// NewGoogle creates a GoogleModule. city is the resolved city-level region
+// data (base_lat/base_lon/lang_params) for cfg.Region.Code/State/City,
+// loaded once at Agent startup via geo.LoadCityRegion.
+func NewGoogle(cfg config.AgentConfig, log *slog.Logger, publicIP string, city *geo.CityRegion) *GoogleModule {
+	return &GoogleModule{cfg: cfg, log: log, publicIP: publicIP, city: city}
 }
 
 // probeUA is the clean, modern Chrome UA used for geo-detection probes
@@ -52,16 +56,24 @@ func (m *GoogleModule) Run(ctx context.Context) ctrl.Result {
 		return ctrl.Result{OK: false, Msg: "empty UA pool or keyword pool"}
 	}
 
+	if m.city == nil {
+		return ctrl.Result{OK: false, Msg: "no city region data loaded"}
+	}
+
 	// 2. Hash-seeded UA selection.
 	seed := netx.HashSeed(m.publicIP)
 	uaPool := netx.PickUAs(uas, seed)
 	sessionUA := uaPool[rand.Intn(len(uaPool))]
 	platform := netx.DetectPlatform(sessionUA)
-	lang := regionLang(m.cfg.Region.Code)
+	// langParams is the full query-string fragment from the city's
+	// region JSON, e.g. "hl=ja&gl=JP" — used verbatim in URLs, matching
+	// the original mod_google.sh's ${LANG_PARAMS} usage exactly.
+	langParams := m.city.GoogleModule.LangParams
 
-	// 3. Jittered coordinates (café-level location).
-	sessionLat := netx.JitterCoord(m.cfg.Region.Lat, 270)
-	sessionLon := netx.JitterCoord(m.cfg.Region.Lon, 270)
+	// 3. Jittered coordinates (café-level location), from the city's
+	// base coordinates (city-level precision, not just country-level).
+	sessionLat := netx.JitterCoord(m.city.GoogleModule.BaseLat, 270)
+	sessionLon := netx.JitterCoord(m.city.GoogleModule.BaseLon, 270)
 
 	m.log.Info("google session starting",
 		"platform", platform, "ip", m.publicIP,
@@ -95,7 +107,7 @@ func (m *GoogleModule) Run(ctx context.Context) ctrl.Result {
 		actionLat := netx.JitterCoord(sessionLat, 1)
 		actionLon := netx.JitterCoord(sessionLon, 1)
 
-		url, bizType := pickAction(platform, encoded, actionLat, actionLon, lang)
+		url, bizType := pickAction(platform, encoded, actionLat, actionLon, langParams)
 
 		// 70% chance to carry same-business referer.
 		ref := ""
@@ -198,45 +210,64 @@ func (r *refererChain) set(t bizType, url string) {
 
 func (r *refererChain) clear(t bizType) { r.set(t, "") }
 
-func pickAction(platform netx.Platform, encKW string, lat, lon float64, lang string) (string, bizType) {
+// pickAction chooses a platform-specific action URL. langParams is the
+// full query-string fragment from the city region data (e.g.
+// "hl=ja&gl=JP"), inserted verbatim — matching the original
+// mod_google.sh's ${LANG_PARAMS} usage exactly (both hl and gl are sent,
+// not just hl).
+func pickAction(platform netx.Platform, encKW string, lat, lon float64, langParams string) (string, bizType) {
 	dice := rand.Intn(100)
 	switch platform {
 	case netx.PlatformAndroid:
 		switch {
 		case dice < 25:
-			return fmt.Sprintf("https://www.google.com/search?q=%s&hl=%s", encKW, lang), bizSearch
+			return fmt.Sprintf("https://www.google.com/search?q=%s&%s", encKW, langParams), bizSearch
 		case dice < 55:
-			return fmt.Sprintf("https://news.google.com/home?hl=%s", lang), bizNews
+			return fmt.Sprintf("https://news.google.com/home?%s", langParams), bizNews
 		case dice < 85:
-			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?hl=%s", encKW, lat, lon, lang), bizMaps
+			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?%s", encKW, lat, lon, langParams), bizMaps
 		default:
 			return "https://connectivitycheck.gstatic.com/generate_204", bizNetTest
 		}
 	case netx.PlatformIOS, netx.PlatformMacOS:
 		switch {
 		case dice < 30:
-			return fmt.Sprintf("https://www.google.com/search?q=%s&hl=%s", encKW, lang), bizSearch
+			return fmt.Sprintf("https://www.google.com/search?q=%s&%s", encKW, langParams), bizSearch
 		case dice < 65:
-			return fmt.Sprintf("https://news.google.com/home?hl=%s", lang), bizNews
+			return fmt.Sprintf("https://news.google.com/home?%s", langParams), bizNews
 		case dice < 90:
-			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?hl=%s", encKW, lat, lon, lang), bizMaps
+			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?%s", encKW, lat, lon, langParams), bizMaps
 		default:
 			return "https://captive.apple.com/hotspot-detect.html", bizNetTest
 		}
 	default: // Windows / Linux
 		switch {
 		case dice < 20:
-			return fmt.Sprintf("https://www.google.com/search?q=%s&hl=%s", encKW, lang), bizSearch
+			return fmt.Sprintf("https://www.google.com/search?q=%s&%s", encKW, langParams), bizSearch
 		case dice < 60:
-			return fmt.Sprintf("https://news.google.com/home?hl=%s", lang), bizNews
+			return fmt.Sprintf("https://news.google.com/home?%s", langParams), bizNews
 		case dice < 80:
 			ecoURLs := []string{"https://about.google/", "https://safety.google/",
-				fmt.Sprintf("https://support.google.com/?hl=%s", lang)}
+				fmt.Sprintf("https://support.google.com/?hl=%s", extractHL(langParams))}
 			return ecoURLs[rand.Intn(len(ecoURLs))], bizEco
 		default:
-			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?hl=%s", encKW, lat, lon, lang), bizMaps
+			return fmt.Sprintf("https://www.google.com/maps/search/%s/@%.4f,%.4f,17z?%s", encKW, lat, lon, langParams), bizMaps
 		}
 	}
+}
+
+// extractHL pulls the "hl" value out of a lang_params string like
+// "hl=ja&gl=JP" → "ja". Returns "en" if not found (mirrors the original
+// project's fallback; note the original's equivalent support.google.com
+// URL actually referenced an undefined $LANG_ACCEPT variable and always
+// sent an empty hl — we intentionally fix that rather than reproduce it).
+func extractHL(langParams string) string {
+	for _, part := range strings.Split(langParams, "&") {
+		if v, ok := strings.CutPrefix(part, "hl="); ok && v != "" {
+			return v
+		}
+	}
+	return "en"
 }
 
 func doRequest(client *http.Client, url, ua, referer string) string {
@@ -361,27 +392,6 @@ func geoVerdict(jump, prem, music, targetCC string) string {
 		return fmt.Sprintf("OK: region matches (jump=%s prem=%s music=%s target=%s)", jump, prem, music, targetCC)
 	}
 	return fmt.Sprintf("DRIFT: target=%s actual jump=%s prem=%s music=%s", targetCC, jump, prem, music)
-}
-
-func regionLang(code string) string {
-	switch code {
-	case "JP":
-		return "ja"
-	case "KR":
-		return "ko"
-	case "HK":
-		return "zh-HK"
-	case "TW":
-		return "zh-TW"
-	case "DE":
-		return "de"
-	case "FR":
-		return "fr"
-	case "GB", "UK":
-		return "en-GB"
-	default:
-		return "en"
-	}
 }
 
 func min(a, b int) int {

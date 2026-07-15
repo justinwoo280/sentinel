@@ -8,6 +8,7 @@ import (
 
 	"github.com/justinwoo280/sentinel/internal/install"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 func newInstallCommand() *cobra.Command {
@@ -21,6 +22,13 @@ func newInstallCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			r := strings.ToLower(strings.TrimSpace(role))
 			if r == "" {
+				if !term.IsTerminal(int(os.Stdin.Fd())) {
+					return fmt.Errorf(
+						"install: no --role given and stdin is not a terminal to prompt for one.\n" +
+							"Pass --role agent or --role master explicitly, or run this in an " +
+							"interactive session (see scripts/install.sh for the recommended " +
+							"one-line install command)")
+				}
 				r = promptRole()
 			}
 			switch r {

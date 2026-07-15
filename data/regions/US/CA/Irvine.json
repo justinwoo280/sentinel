@@ -1,0 +1,55 @@
+{
+  "region_name": "United States - California (Irvine)",
+  "google_module": {
+    "base_lat": 33.6846,
+    "base_lon": -117.8265,
+    "lang_params": "hl=en-US&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://news.google.com/rss/articles/CBMikAFBVV95cUxOVm10LXhVcE1iYlBwbE1MMzRBVmdCMmd4Yi1Wb1FZaUIxczBGaG9ZM2FGTmotc0l1cER3c2d6U3BXVm42bEJ5TnYzbjNvdzd3X183Y0FGSEhUaUNHT1VRN2hPRkdMcWs0aUJjZ2syNERxUk1OTHBfWW1rYkFqa3V4WnRjOUZ2eFlCTFR4RHdmc18?oc=5",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE00VzcxcE1JVE9vRUpaczQ2QUFEM3FCR3NUNFZGandiT2NRbkw2ekxTWEs4b1dpV05Zd1MyYkEzNmlMRU9ueGRFZlRpZU5jZVg4V0d1T0N1d0VxQQ?oc=5",
+      "https://www.usa.gov/",
+      "https://news.google.com/rss/articles/CBMi4wFBVV95cUxORzR2UjdqTXZOeEVaN2dkalBRTGdNb0wweDN2R0xLTHhKS3kwa2xaX1Q1Y3E4dlZhZTBFYUZmSktWUUtGOU1GSWVQUGRGU2RrWC1uVUdZQWZSaThnTE5Jc1VQWFpqbWpkamRYTWxwblN3YzFTVDA1ZUtUUkFoU1A2YUlaZEpfVnB4ay1URDdoZ0E2MEVTSko4c3J6aUNzYTk1LVhJTUpYaFpPeXRlS2pjQ2JSemNyYWhVODhoRjFLQXZqcTZtTjRkU1NuWjR0YWxocmpndkdRRTBlQWttaWJ3MXhPSQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOM2dtVDZlM0NYRGFkOVhSS2ctYWtnQWM3aFdsSTBLYVBUN3NEcmNsbFJYRS15Vi12M3YxOEpsNGRqbVNrTXRCRjJwTnk0bm1BMjVTLW5tZ1dhZXg3NkpOdjQtWHlsUkJrRk9WVjJ1U3hfZmtFVWRGQW9KLXNTR2c2eFZJZVIxZTR4V29hQ2tGR3kxNVRveVVpRVB0OXlzZlZub2NSVDhVM2dJYTcyY2NGSHRKQXFYZFE3THdQZ3FxM0M?oc=5",
+      "https://www.chase.com/",
+      "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPWG81Nm9lcGU3TFNkdHpuMW9MX2NFNEhDVFJGeFZ3bjczT0UxeXlYUnNXd3haWl9ISUROOGdjRm9McFA3TjN5d3c0U09mY3JtLUk1T082akRwd0g2OV9IXy1DZ3htR2ZiZnd4WmNtc1l5aGp0cEZIQURPMUNWUW5oRFNPQU9KYlBNdG5hX042TkVuNlBOaUY5R211WHFfaENiWmptUGtRR25WMUJTRmdheWd0YlRWMGdKT3RxM1VJREZ2RnJBRmloR2M2SVpiQ1AzcmRqV0syUjJHWkxCMF9KWjJ3M0tNNVhLcEZyQg?oc=5",
+      "https://news.google.com/rss/articles/CBMihwFBVV95cUxQMDF1WGZPdXR0d2swdFdMcW1lTS1xVEZDd3djV2kwZmN2ZTZZamZMZVN3bUluYjlDRDd2X2ZTVlUwaHNlTW9YbmtSRUt5ZVFlZTJfaGVjTE5WbThzbHNlbml1VEFfM0VXRzUzdnhjelRMTnd0cVFGTDd0aWlhS3E5LXFBWWFlWk0?oc=5",
+      "https://news.google.com/rss/articles/CBMidkFVX3lxTE1lTEVJQ3l5VnlPbGV6OFJxenBUaHpYVVJ0dHdMM3JoVmFLaU9GT2dKNkZvYWVsaW1SNDZWWldKN3pjdXNabHRQckxIS29EWXZsSXR5TFF5eTVjZ1NPYmRQbTVTSnA4UnNyVFFsNzZsdzhCdFRGQWc?oc=5",
+      "https://news.google.com/rss/articles/CBMinAFBVV95cUxNNGs5TzZDVi1BS1JodjZOdEVDSWhrY0VoQU5VaXNDanFwaEZNNkFaQ3k2V3hkN0M2WUZOZDk3MU1BLUFJVDRqVzcxWkl4SXgyRXFxbWsycVpKNUQ3MUNWNVVoNjdDaVc3QzlvMjVrdWNwWEs3bk5Sa1Brak1WQzRlZ1lpcFZTaHMxdU1rQWNUQTRGRm84cVRyX2NoeWg?oc=5",
+      "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNUENGOGpjOWZlU1VCQVhWVE1kemtXSFBpWWRDV2UzcU1WOVJjWWNBbGw2azNydEdKMncxWFZFbDFYUXhqZ0o5VVB1SWZTWV9DQjZyamtINnM4dFpQajFGNzNpMDFZdWdXRlpsN29QX2E3YXJCNlc1RUVKRGFGSHNEU1gwUUREc2dRTW5BUG5iS0JrYVFnTjUxTEh2TENsb2lzTmNWU2pUb3gwMXBINi1hNXNIZ1VWeTAwLUF5THNxM3NWS2theUZEVA?oc=5",
+      "https://news.google.com/rss/articles/CBMitgFBVV95cUxObjBFQ0x4dHAxeGhVUDB4NlR2LVlyU1JTNnJhWkV1bnI4b1Zneng1X0E4bmpBWnJLVjBHZm1aaDctN19OejdjdGpnYVlxaHJxcjRGQzZZLUNhbmtvakJmc0MxTVpmc1l3ZzBXWFhzWE8teV91d0x0WFlTc2JUM2RDNFUyMzVCWl9mMWltOTJjTWM5Mlpta3dtN3VtT1A1RHpCcUhGQmNUMWNIaTYtZGU3MjQxMnExZw?oc=5",
+      "https://news.google.com/rss/articles/CBMixgFBVV95cUxPVXo2V3hZejBvWnI1bGJyelFEZ0tRRjRVOHRhdlBic0tSOWJxamg4SmRseGx2cUcxS1p5ZkRKdWVkOVUtYl8tZS1BOFFmb283ajU4RDFfTXlic1NDaDBmNzgwaV96UXNfNFJOR2FETGczQWYtQ1RtSkZxRTRhVl94N0NjRnNzNUNIdTkyWXpHdUZkVUd0dDVTaVlIempTVkJKOWFmc0pUbWVtWGx3RXQxU2gyRkJnQzd5dkdkTWZPWmgwZ2ZiRmc?oc=5",
+      "https://news.google.com/rss/articles/CBMiigFBVV95cUxOSjA1SVFkT1JfcmQ0WlE4ZVRiTWNITDFtOU1mTHU1QlVmX2lMY3FDQTBaU3k2WEJZb05Jclo0SkZsX2l2WGIxandPQjVMV1pOUEhKUFpETU1mOVlnLVo3bE12a1lpVHVhYm51d3NVeGtlWWFWbk1odFVXd1RHTURzSUVaanR3Z29JbXc?oc=5",
+      "https://news.google.com/rss/articles/CBMitwFBVV95cUxQeEVPWE04c1JpNVl5NnhDOU94bDhXd09XUUdpNnoxcDNrQ0g5Tks0UTBqS19PZ0FFb1BfQlBTZnVKM0R3YXYyazJJNTN1cFcwT2V0bUpIS3RWbGJwSVIzNEt2SVFnb0xGRFF3TXNtZnRlVktwRk8wUjlQVW1MbEQ3QktFN3pvRnQ3MzBydDZqSU93S2lfZmpGLU1lTHBCMkQwak5EQjdTcnFybE5yTm1NNGtVMzZoM2s?oc=5",
+      "https://news.google.com/rss/articles/CBMi8AFBVV95cUxQZXYteFdoR2JfUXJwVVNQNU43bkVtcGgwOTFHNVBvNk5aZ2pKQ05jOXJXLXpvU3otUWZQM2plS2E0cUdKSUhvSzJzU0pxRmFRc0xwXzJwZUl6UzJzdVNYZHRIYVNqRmtvLVRlYTF3QlEwNFpnRE9zZ3NHSWIxaEVka1RxYlRPY2lPa0FaemQ0X1lOMFF1X1Z3anB5UTRFUXBZU21oekhvU2FIc0ktV2JuRGNsNzMxRl82MG4xMUNqMHBzUHB6OTFRZGk2T0lzVlpwSzFkaDhEbm5DbnFXYWdCWEZLVjI2VVF5aDU1anp1aUM?oc=5",
+      "https://news.google.com/rss/articles/CBMivwFBVV95cUxQeFhIc1R6VDVMZjhwZTR4bnplNE5HYWxFUmV1SkVpeXdDQXN2WDZHOU92Z0E1Z3Awd2piS2NaSXFiNTNDRlJLaEgyQV9GLXFtM1k5QnFOcG1aRkNQcEpibXh2YkcxcHUyb3QyamVQZURxWGVrT1ZuYmVhcG10YmNMeXhHaUp3Zlp4ZUhQdk1nWjdHVE5xRzNUeVc2S3JhVTN6S29Va1o5aFBsLUhMZzB0eENGOHBpMTdINWxqZGtGdw?oc=5",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9ISkRMWWhPVzJqZFRUYVpidXczbGJXd3lfU2hBY1VqZU5Jb01CRG9TRk9LYnh0aWRzU2g3OUFRUTBMaWEzTjNsRWRKSkxkMEtWeU8zdFVHVk92Zw?oc=5",
+      "https://news.google.com/rss/articles/CBMiggJBVV95cUxOSC1WZ3VveWJfTGpJVnlFREZlcnAxS2sxM3pVME5hbER5dFliV1NsbTJXVlRObFNrUTEtQmpMVkVGc1FDY1hrcFlFczVESWRaY2dpalVsZUREVlZjbFVtZk4zb3BHWEI4bnUyU3pRaGZEQ2pyejFSRWJHNFBjRWdpSDFTaldVQmdwdURST2Z5LXgySm1xQVZvakpIcjZObWZ0aGdTUjlSSlJnbkNqQktXNDJMU05WVkl6X0lld2lXdUEtbzFiel9iR2hHeDJWeC1tdi1jRFNKUHgwMjB5YVFhOFU3NE9ianRtREpGSTEyckVLN3F3bDZEZEZ0dzVRWlRrZUE?oc=5",
+      "https://www.irs.gov/",
+      "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQTzk5TkVyaXI1Tl9tMUgxc20zOHBTTVk5M1NyX1lJd3MtYnFfVW9xV2dJR1p2Q1RVb3ZqRkRFRXBCM1N0VVdJTlRLT0R6Z0w0U1FLYlhfMXpFWGxFZ2htTmk1UGlmWEJ5THUwVzAwRWU4NUdxVnQzN2pUOENDbTVOekNfcld6R3RWN1h5US1vVkk1QzgtQUlhWXdaYnNvV3VyOFZuODJLcjAwbl94U2Y1cGN6VEJiM1BDTngwQXdoMzQ?oc=5",
+      "https://news.google.com/rss/articles/CBMimwFBVV95cUxQMGJJX3RrZlBnOUd3aXc5VlloY3JNOVN4V0xqX1EycG5QcU5DNUlWQU1qNmZWbUpMTTFLZjdyTzY1NTFNOFJ1d3F1aFlobUMzN1VDdnp3RWJibHI2MGFaaWZzdTJGVEJfYlFVZk5DUVRCN1V6Z1JOMTl5aldnOFUtUXdSSFFEZmR4ZUhueEM0M1o4VE4wck1HTmF5SQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiywFBVV95cUxQN194ZnktYjBjY3pQVUVxeTd2cDJIcU5iM1F2QzJRMjBYZnNrTTk5Z3RWNll6U1g2VFdaTkU2T0JLX25WWUVRQ3RDSUd0MDFSQVFHa3ZSdEd6MXFEUmxCdFNNUkdFYmM1OU52SEkyQW0xVGhvM2pRQ3lNTHBJT01qNmdPRWg0Mm5JSUkyWi1jbWcydXdtNFhwUWg2Wl9paWs1dFhFQ3d6ejJZYUkwUEJSY2xPUkJGMFYtekVLeGxnV0pwN25WdUZhd1NDcw?oc=5",
+      "https://news.google.com/rss/articles/CBMidEFVX3lxTE9xRG9mcmR0WWJlSVlRUENXX0RpTDJneGYwWWw4Qm8xZWdtRG1vWUMwaXVJNkhLNTJaLV80cFZZWDJTNVpnLUpnRmxEM3FvSS13akZVT2lMcVo4U0ZRT2lvREtybFo0OE5LLTJtUEp3VTMycER4?oc=5",
+      "https://www.amazon.com/",
+      "https://news.google.com/rss/articles/CBMiswFBVV95cUxQNHQwVjBDSVYwd0o5dFhnX2dxbFVoUEdmWWU4TXlxUlFrUU9BcUl3UDdGYnU5RHIxcUVKbktWUjJXV0pmckt5X3pMbDBQOEtYaGJTeVVTUWFKcWRhV3BCY0hHa3dnbmcxOEJVd0lzblJnMkRRbDIzMHZ3Vm8wVC13M2JqcDgxdkdNYlo3VlNxQjl2WEhIei1IS1Vydlk3U0FVUkIyUVJfSm1QdWQteERIZXdIaw?oc=5",
+      "https://news.google.com/rss/articles/CBMitAFBVV95cUxPRDJxdG5EMWFzbXVJM2RVY2RlaEdIQ3o1WnRxU3JYV2drd3RJV2x1Q3dobE5wVHFfOTJ4MElBQ1p1MkVYUDl1RGF3X0h6ckZVNTlwWjFYNXhCT2k3cHlCR2lPLTZBZTdleGY5aEZNaWZGVER6UzZUdm11S2oxOGJWMXpPc0RCQmw3cDc2Y2k0a29CX3pNd3ZOV1BESVlRc3lUVkdocDJXaVd4UkNJbXRrdnEtMWg?oc=5",
+      "https://www.weather.gov/",
+      "https://news.google.com/rss/articles/CBMipAFBVV95cUxPYzIzazdtd2lST1Npc1JTQklrS1NrNlpQU2R3QUp4dWg1UW8wMmhReEFQc0pJN2pGczBQSVJsS214SC15S1FRZUp5XzhEc3hKY2Z3OWE2YkVDbWlkWlJtdTN2MzdpVk1GbHZ0cHczVzZHcFhodUV2emwtY1dsc3FJM2ltRHlRV1RPYjRkeFE0ZmMyWE9JWkRUOVRKMmRuY0dLd3RzSA?oc=5",
+      "https://news.google.com/rss/articles/CBMigAFBVV95cUxQMEd6QWhBVmNkbmo2OUxLazBWSGM0RWlRb0NYVHNhUHVCTjVmZl9fNWZPWXcyUlRJX3FUZUM0ZGVXT0ZUQ2FiZjZmanlrYmFlYVFmcmU4bFJ3MkdVZjF3OUlnUnJFNVlVeHljVEFRZ2l3b3R3V21BMlM0RUZRS0RrTA?oc=5"
+    ],
+    "static_urls": [
+      "https://www.homedepot.com/",
+      "https://www.zillow.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.gov/",
+      "https://www.chase.com/",
+      "https://www.target.com/",
+      "https://www.walmart.com/",
+      "https://www.usa.gov/",
+      "https://www.irs.gov/",
+      "https://www.indeed.com/"
+    ]
+  }
+}

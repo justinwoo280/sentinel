@@ -1,0 +1,52 @@
+{
+  "region_name": "Vietnam - Hanoi",
+  "google_module": {
+    "base_lat": 21.0285,
+    "base_lon": 105.8542,
+    "lang_params": "hl=vi&gl=VN",
+    "valid_url_suffix": "vn"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://news.google.com/rss/articles/CBMilwFBVV95cUxQNVNGZFh3dU5TWFk5NFFRcHQ0Q2g0dXZma01ORFN3YjRFRkZUUkEtaXAybl9WYkRmbjNfRVZ3SUtPQ2hqS25zN1c0R1h5UTVteU80UEdIeDNzTlRJaU8xTkhzeE56V2l1ZnZJYVBsY0szNDNDcjZsT0c0cm9haDlGYjhZZnp1MERPUmJJT1Z3QzNocktzTElV?oc=5",
+      "https://news.google.com/rss/articles/CBMiowFBVV95cUxPVVNfUWV3TWF5U2dmUWVEVkVhNGpVNTQtSHdJRVNidmFVMnBfWnB1T3lDNndKM1FFTDQzWDZYTFNSdGVkeWhzcmI0dElYa19KeEtiUFZ4ZnNoZFItNGpDaHN4ZTVmVlVWUjA3WVhJa184YnN4cnZJWHRXZ1ZQRmVPcnlrMk9YRHFZdU5xczgtaGdIdThnNFQxWmt2Ym5YZ3hqRW44?oc=5",
+      "https://news.google.com/rss/articles/CBMitgFBVV95cUxOaF91YWJ3Z0hlNU1uUm1TaFdCc3RGSnIxS05uZzZpeTZPZVdHOFRBdnVmOTljNlRtNW40Z2ZBT2ROdjVjZHY1MV8yRzZpR3lPUkl6SUFUV0M0WG9maGx0TG12cWowTHVhbjdQQTliVWFLR3I1d2d3THBVT2lYeUZTZUtBVEdNUm1aZExwc25nVVNoazZ6bUx6X0NrRjY5VmlLZ05DUkRSRGIzR3JwZTNrcE5hRGVZQQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQMnA1Ty1FUWJDZ2tQdmc4UmVOMkJPOE0waUp3cVR4MzRCaDZLXzlhOUFtRl83NzhCZldPWVRlblJ2WmcwSUpoSmtxUmJQMlNGRmRodlI1VDdKS0k1LUgwbHZna2liLVpfeEFtemJJbGs4RUJjOVBYV2dxNWMxOTExLUU1aThaTWwwelZpT0ppZG56TDVUSFhXdzZfdDdDWlgwN3FYemZxTGE0RzA?oc=5",
+      "https://news.google.com/rss/articles/CBMingFBVV95cUxPTTFtNGpTeDMxSWFpZkpTcHZmZFg3Q0JsY1ZLTHVfV3BYS2J2V0t0blFGclRjWE14Rm15QnBFVGRNeGx5Y3JVZGE3NGRGUnJiY2JrcEtGVks1UW41QUIwVThKZmhNNjFrbERabjJmbzZMdXFNbnE4cG5TVktHZm00NXRXYTFsdG5yRkNXSzZvOEhzOGRuQnBWTlFFUlc5UQ?oc=5",
+      "https://news.google.com/rss/articles/CBMipgFBVV95cUxPdEFiSVA1cS0xT2xRZ3JGSWkyeV9UdkZKUDVNa3FxZkg0a3lpc0p2M2ZOWEtEalFVZU9WclF5c0t0dzkyOHlVSUpTWUd3QXcyTlZ1ZkNHenYzM1B1QlFUWWNjdUMzMFZqcXBzSDZ2Q09Gdmp5Q0FzWnU0M2xxbUdDSDFjVDM3SW0xUmJZcm02VTNaR1Zfc293RExHbmJKYjBrMWVoYjRR?oc=5",
+      "https://news.google.com/rss/articles/CBMibkFVX3lxTE1INWM3RUthRmFMdzEyU1hRczUwREJ1Z1gyMzBwVjBlLWRVVEsybVAwUnRXMzZhSWh5MURlcm93cllGTFFLMkYxSjVpR0t3RUpOLU1fMDZVdnVSS0loQWthbnVlNnVrUl9jcFlDVXdB?oc=5",
+      "https://news.google.com/rss/articles/CBMipgFBVV95cUxOMi1uV1VFVEp2Z3otTWdmektjUWhLaDNqajhLcFlJTHdnaEp3dnh1MkhKelhQYU8ybHZiUFk1emV2VW5xSEFCVlIxalFJSFNCaHg3SjhCWkU3ZDB6VG1YamVQUmtUcXVwYmFUUkR0QU42QnprQnlIZzl1YVdxLXl5VXE0RUhJX2hoZUQ5aGFpWUkzczNhYWtWcFpYZG9NUTdtNVVieHpB?oc=5",
+      "https://news.google.com/rss/articles/CBMiiwFBVV95cUxORlpNTjFJN0RIYVpxUllIUTdTSmYwVXNmLUo0TURaRy0wcXpkU0w2TnVYOVJlYXRDX29JM1VQaUZtVEFYODZmNlhmcGI1UFkzMkNZTVk0TTNYMFNLcXEzRXpZaG1RNTVjbnQ0ZWdaR0M5SGFDTk8zeFdUdm5aOERrTFM5T0JwVmJRSmw4?oc=5",
+      "https://news.google.com/rss/articles/CBMitgFBVV95cUxNbWpEMDNfVWxDYmF4ekhzMXUyd2tqeHVyZFRTNm9iZ1FIMWIxbmY3RDZBaUhLQm9JLUt2bnNvVHpyRk1sUENTajFFcFRlNU1HdXVsYjdmTGNNU0dLbFlPQlhpbkpMbC1pWDhlTlNHeDBPQXZNWXNXLXlCN0Jfb3ExbmhBaHlidFFsTU40UUVETE5FWFpaV1N3UjJISlRwamxHZnJ2MWFrT2p0eEdCZlItZmt1OVBEUQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiogFBVV95cUxOLW12VDl2YW5qaHUtenc4cUhDajBYUDdWRkRyenc5cUdUU2VJX1RfSkxwYXREUExWdXhoRGNpbEF6MEZjSGRkVGVyY0M5Y1o1SUYtVFZrOHJWQ0Z4R1MyamE4SzYyNllQaXZxaXVDWXlaZURZNkJib3NCTEtJZXJqamk5YTJNNzk4N3R2ODNzd3FTWGFwUkIzOEJFYU1jb0JmaGc?oc=5",
+      "https://shopee.vn/",
+      "https://chinhphu.vn/",
+      "https://news.google.com/rss/articles/CBMi6gFBVV95cUxQdUs2Qm1IbU1jLXRwOXJDNVNGc192ZzYzSUpHQlJaei1TVzZpVi1MLTJIOE9Vck4xS2FhQ0JfNkt1dEJKUTR2NFp4Q3dVTkxUVEhLRlIxRkMtbWFCcjVkcmplQXN2aDRWYVg0ZnlmT1kxNHNCemV1WG9KRGdJTldDM09XWC1rUEN6SGZKb3Z2X3pmU2xsaWVsbm82NFpwSEkxbU1uQzVzUGtTcm9nRUpRMVF3bkx6NmVOenZnZngySGZXd3NELUhQWExJMnA0SV9jZnUwLS1tcE9YZUpLaHRlYXJsWnhqU25fOHc?oc=5",
+      "https://news.google.com/rss/articles/CBMipwFBVV95cUxNWnQzM3J4d2NBTHNsbXh1OGlqM2RhcEtoUUxyRk5Ud3VrTGZJZHFuTHZKNEdMZ19FTUJ4RzE5LS04Y29iV3VtQlp2cXNwMXQ5bHVaR2p0S2JQb21OMXFiYThRXzZVOEExNXZPekZmeGRHTVM5N0JFNnp2dmxoeW9RY1lpMTl6N0VsdTdmVlZKRjFUcmxZb3hZVGRETy1FNmgxSkg4dzhCYw?oc=5",
+      "https://news.google.com/rss/articles/CBMijAFBVV95cUxQb2lST080OHg2eDhJdzdxQ09UdVpNUHVic194NGwyOGtSZGtZU3J3cEg3bWR0YnIxeEdUVEo2OU9ZMW9VeFlVYlhsMExyVVlfXzVQSGVnNmZBdVpndlpnLVh2amc5aU4tczhwZGtaNjZaa0V5bkFOWlkzNGsyaUZrbjNPcmJ1VzVFV2lLVg?oc=5",
+      "https://news.google.com/rss/articles/CBMirgFBVV95cUxNMTFPZ3NSNllKM2ZWUDZ2RU9WVWc1UmJKTGpSUHV6ejdGZ0w2dzdISkFMTkhHTXo1TEpzYnB1LU9EY3RZZEZvUzR0c0x4WjVhMTdvVEZjd25YTDJONFMzdHVQSHpNWjRnM3M4enpzWk12TzU1MGlzUXdPaU1ILXYwaURHQnEwUGMzaUljbVBqeUxxeXJmcmlyS1BBeC1QbjhyN0d1alQ3VGlORzh6Q0E?oc=5",
+      "https://news.google.com/rss/articles/CBMif0FVX3lxTE9lUG42RHd2VG5naEVvdGlsS3pnTTNiTjFjenZGblh0dmRrQkY2bzNJN1k5bElZUzNRMWFqblhSV0ZBOG41eUF1NTlNeHBLWGh3T0l4SkJBeUJTcVNqd0VveWtUWUpONWpNaDlLbnZqTlVvV3JHbHBUU2RPanNDc3c?oc=5",
+      "https://www.vietcombank.com.vn/",
+      "https://news.google.com/rss/articles/CBMirgFBVV95cUxPZjRod1pyajNzNzYydk14NEVabU9Uck5kZVRUVGt5a1paMGFVU2ZfbWdRbk9haGp2Y2g2d1dUQkRDcXQ5Tk55aFBqYmpfR2gwS0h3RzZDbzNRQTZuc2plU1ZTVUNYUWNPWjRDQjBtNjZLSEc5Q1BWQ1lFbkt5Ym5nZ05FdHJZRDgweWdQZ0dET3Y1dlN3UkRQbVk4Z2JxY0Yxd05PNDR3enpTbEduWGc?oc=5",
+      "https://news.google.com/rss/articles/CBMib0FVX3lxTFBXX0MyYmlyV29qZC1CRnRZNjhfMGFSYlBkQ09Kc0ZqNlR2NjhWbFhSMjJVSjROMm5yQWlPbnZienJDMUJUMzF0bGEtdHhYM0R2d0dLMThyTHRodnpLVzlmbFVQNVZjclVFUU9ZcF9Uaw?oc=5",
+      "https://news.google.com/rss/articles/CBMipAFBVV95cUxOb3VlcE95ejM3VV9XM0pJVF9kTVk4eHdRRk8tNzNDaXpzVmNVZUc5Zldqc2haVkZCSkFweXpKdWY5UGY2TzJTbUMwc0dqNXVBQTlyMXE2eWg2X0pka3o2OF90TjdJLXJUU09tXzJUZWVFQjk0N3pOTGpHQWdYM2FFN2VmMXNYelNIcVU3WUV0cmFSNUxrdXlQTzJERV81U2RFTlBySA?oc=5",
+      "https://vnexpress.net/",
+      "https://dichvucong.gov.vn/",
+      "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdzhKdHdRczlIQ3hBWmxWWC05TF9iQXpMalJIM004QzBUWDFnRDh3SWt6bHFIX0J5Y1JHSVlOeUtrSzQycDBUTmVVd0ZWNWlZUHFTb2JfaFc4alZCQ2NJS20wYl9samlzanY5dGZ5NDJsQ2c2M0dQVDJyX3FqVHdBZ3hVc0lNMGZWTVFUdFZHLV9GVW14VTVmN2tBR05MeGk1WmRGZTNJS0VOajhq?oc=5",
+      "https://news.google.com/rss/articles/CBMitgFBVV95cUxOT1dOYXJHLUlwcy1pNlVZWWd6S0ZYTEpHWWl1R0hrTHZUclNuc09PdERpTGhUZkMwM1FFZFp4WWU0WnNJLVFNclFNSG8wZS1wQkVqVmRELUsxV3N2VEFGMWQ3eERrUGhuckhFa1Bfb3VCVXl6aEJfOHE1T19fZEVvczl0LUpNVnBvcllPTGc4MFBYcjVicmpiMm9laDk4X3VKeE1lYzVaX1ZzMG96eDR0MEg4V1VFZw?oc=5",
+      "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOZDVNTFZyLTJJMm9vSHItSjhMN0IzM1ZGcWZBZXJobFFyajRJbC1vOEd3NXpaZ1JhaHVMT0FqQ3VUOFdkZnZNWWlENWY5MEYzdHUxaUU2cEZ0MGFFb1Rfb0FUSkhOMXFmblhSVXo2X3M4Rm1jMzlaN21ZMWJPUkRlc2NTZlpXV1RrNEs5T0RkbHRxV3paUUluRjVlanlhX2R1Wi1ESzdHYk5fdw?oc=5",
+      "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPTmw4c2lzTDVRcXFYamlKMVhKUEpvek0wVUdaUG5Vd1owVFVGS3AxYnNqZnd6dUlvWngzVzdYOXA2V0VTUVp4RzNqeTJ0OEtJVVFaTXVVc09FNzlMRHpwYk1sZGJfdW4wOThTamZjZ3BtYWlOLVl2dERHQ2JjS3JLQXpnb2dFbUE0SkVhRDNmZEhhQVZpSDlGUDdfYzJrSGdfMXBHMW9rV3pkQkVWUDFsN0RFR3RNd0pnYTd4MXdMMlMxUm5wN0lrNjdjck4yeV9aN2VLdVIwdU5yNE42X0JN?oc=5",
+      "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPNlFISVJOTjkwSWNZcHpLNEkxVFd2U0dJM2JQN1BnNE5TWnA5Q1UtMHhkUEhSWGpyalh0ZGxKeUVBbkZyZ1MtMHVzSk1YT3JKNDJqNnc1NWNIQ1FLc0FKdVlfeWVZNHB0VXR0YVRVRXV2M0pNN0llcEdzT1dKLXdrdGJtUDl1cEVtMW9ZbkFHR0ZRT3BCNFMtSkJVMkR3NkxmaXFMd1JaQmFqZFNydklHRDhSZFlsbGRIVm5FODZqTktoczNRR1NtVjMwWkU3Rm0zRU5YQ1BiakpPMVMzc2xrbmZB?oc=5",
+      "https://news.google.com/rss/articles/CBMilgFBVV95cUxOekVoU2pUdF9fQU9Ya0lLMklXakFKQUJweHdjVFZHbUl6TkpkVGJfYUNCbkpBQlIzQVRqeU8yMEVQenc1RGFWeldrcTBqbUdMM05tcTRNNlVGSjBFcTNEajkybnQyanpZX1ptVUktdGpoc3RVS3dyYzhkTENqbHg4WlU5REVGTXpZMzdZeGF4Zlk0T1VEU2c?oc=5"
+    ],
+    "static_urls": [
+      "https://www.vietcombank.com.vn/",
+      "https://vnu.edu.vn/",
+      "https://vnexpress.net/",
+      "https://tiki.vn/",
+      "https://chinhphu.vn/",
+      "https://dichvucong.gov.vn/",
+      "https://shopee.vn/"
+    ]
+  }
+}

@@ -176,7 +176,8 @@ func (p *Panel) showStatus() {
 		}
 		fmt.Println("--- Agent config summary ---")
 		fmt.Printf("Node:     %s (%s)\n", cfg.Node.Name, cfg.Node.Alias)
-		fmt.Printf("Region:   %s (%s)\n", cfg.Region.Code, cfg.Region.Name)
+		fmt.Printf("Region:   %s / %s / %s (%s)\n",
+			cfg.Region.Code, cfg.Region.State, cfg.Region.City, cfg.Region.Name)
 		fmt.Printf("Modules:  google=%v trust=%v\n", cfg.Modules.Google, cfg.Modules.Trust)
 		fmt.Printf("Master:   %s\n", cfg.Master.Addr)
 		fmt.Printf("Schedule: interval=%s jitter=%s\n",

@@ -28,11 +28,16 @@ func TestGoogleModuleSmoke(t *testing.T) {
 	cfg.Node.Name = "test"
 	cfg.Region.Code = "JP"
 	cfg.Region.Name = "Japan"
-	cfg.Region.Lat = 35.6762
-	cfg.Region.Lon = 139.6503
+	cfg.Region.State = "Default"
+	cfg.Region.City = "Tokyo"
+
+	city, err := geo.LoadCityRegion("JP", "Default", "Tokyo")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	log := slog.Default()
-	m := NewGoogle(cfg, log, "127.0.0.1")
+	m := NewGoogle(cfg, log, "127.0.0.1", city)
 
 	// We can't fully test the module without real network access,
 	// but we can verify it doesn't panic on data loading.
@@ -67,18 +72,20 @@ func TestTrustModuleSmoke(t *testing.T) {
 	cfg := config.DefaultAgent()
 	cfg.Node.Name = "test"
 	cfg.Region.Code = "JP"
-
-	log := slog.Default()
-	m := NewTrust(cfg, log, "127.0.0.1")
+	cfg.Region.State = "Default"
+	cfg.Region.City = "Tokyo"
 
 	// Verify region data loads.
-	rd, err := geo.LoadRegion("JP")
+	city, err := geo.LoadCityRegion("JP", "Default", "Tokyo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rd.TrustModule.WhiteURLs) == 0 {
-		t.Fatal("no white URLs for JP")
+	if len(city.TrustModule.WhiteURLs) == 0 {
+		t.Fatal("no white URLs for JP/Default/Tokyo")
 	}
+
+	log := slog.Default()
+	m := NewTrust(cfg, log, "127.0.0.1", city)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1)
 	defer cancel()
@@ -91,8 +98,15 @@ func TestGoogleModuleResultType(t *testing.T) {
 	cfg := config.DefaultAgent()
 	cfg.Node.Name = "test"
 	cfg.Region.Code = "JP"
+	cfg.Region.State = "Default"
+	cfg.Region.City = "Tokyo"
 
-	m := NewGoogle(cfg, slog.Default(), "127.0.0.1")
+	city, err := geo.LoadCityRegion("JP", "Default", "Tokyo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	m := NewGoogle(cfg, slog.Default(), "127.0.0.1", city)
 	ctx, cancel := context.WithTimeout(context.Background(), 1)
 	defer cancel()
 
@@ -107,14 +121,38 @@ func TestTrustModuleResultType(t *testing.T) {
 	cfg := config.DefaultAgent()
 	cfg.Node.Name = "test"
 	cfg.Region.Code = "JP"
+	cfg.Region.State = "Default"
+	cfg.Region.City = "Tokyo"
 
-	m := NewTrust(cfg, slog.Default(), "127.0.0.1")
+	city, err := geo.LoadCityRegion("JP", "Default", "Tokyo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	m := NewTrust(cfg, slog.Default(), "127.0.0.1", city)
 	ctx, cancel := context.WithTimeout(context.Background(), 1)
 	defer cancel()
 
 	result := m.Run(ctx)
 	if result.Msg == "" {
 		t.Fatal("result should have a message")
+	}
+}
+
+// TestGoogleModuleNilCity verifies a nil city region is handled
+// gracefully (no panic), returning a clear error result.
+func TestGoogleModuleNilCity(t *testing.T) {
+	cfg := config.DefaultAgent()
+	cfg.Node.Name = "test"
+	cfg.Region.Code = "JP"
+
+	m := NewGoogle(cfg, slog.Default(), "127.0.0.1", nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 2)
+	defer cancel()
+
+	result := m.Run(ctx)
+	if result.OK {
+		t.Fatal("expected failure result with nil city region")
 	}
 }
 

@@ -1,0 +1,53 @@
+{
+  "region_name": "Singapore - Singapore",
+  "google_module": {
+    "base_lat": 1.3521,
+    "base_lon": 103.8198,
+    "lang_params": "hl=en-SG&gl=SG",
+    "valid_url_suffix": "com.sg"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://news.google.com/rss/articles/CBMi0gJBVV95cUxPUEFOOGRzNUJHcVB2dnJuU0VQb2VDUm9YUlRUczlITzdXd0dHUHJ0OTlyRFRZXzVMTERRT0JfWEhzTHdwRnRmdy1Ud0VDTGFCN3hSVlctSjY0dUJWRllzMzBSb0dSWmtaQU00Y3VYZ0ZlU0xmY3JLX1Q3YkNmMk5LbXRNLTdDVjdXcUY0c1pKcVQ2VGF0T084LTl2NW9pX09SRkpTa0lTZWs5N0ZNMjNUcDd2R3BsQi1UcW1VNUF0ME5SZkRPUUNtYV9JTTJzTEljZTlWWnV0WFl3ZWtQXzNDRENVYjlCX2M1bXNQMGxkb2lVeEc1X0tzWTZtVk9ub2xvcTIxSzRHV0ZwWWlBWklFTU05Ry1fUXlMY3I2aG4zdUtCaDhjZDJTb2pFb1RQYnl2QkpoXzVjY0FlT2FOTWFHV180NUc5NnQ0RW10OGhuMG5nZw?oc=5",
+      "https://news.google.com/rss/articles/CBMiigFBVV95cUxNcUMxMHlXQV96dnA5OE9OaUlfVFMydTNUNUZ2NzRndTF4SFp6R05DcXR1WTV2SWJVX1BScnA4OGxUUVoyX2hRa3c0SGNqY2M3cVEwb2R5eUxNMEVqVHU0RnU3el8zSkltTVZrUXNvMnQyVEhleFlVTFlKVXNGWmlNd1g1c19LV2x5ZGc?oc=5",
+      "https://www.singpass.gov.sg/",
+      "https://news.google.com/rss/articles/CBMikgFBVV95cUxPaXhVa1UtLWhKS3dqSUVMazRZd0tQS1doQ1Z4U3FEd0NsZU5SaEtiUHFmN2diTm9DRTRpOEhNQzRNdm5UNjRnVlFnY2U2S2RhQXdVcUt6TWpBRGF3QXpiZkN4SFU5bEI3QVVzZTJiX3JsRjU5Vm1VZGJhMzE0NTM2TUNKVXQzVUY1ZkFTQTZNalU4Zw?oc=5",
+      "https://news.google.com/rss/articles/CBMisAFBVV95cUxNa1BwRExZOHRTc2JRR2g1YjVpcENsSWhsTzB3T3hPMldxUDl5ck8wUV9ROENOdzBrdzR1Qmh5VzgwdkM0S2xBbkwtdGw3R3JOREUxbnJXVlJWMlZ4NGJuSW1Vb21XdVMtSXpWdVlaMlNnYWdvVkZrWnhmazRaWGRfX2xIZmFvX1ZRRThRdDJVeGV0TFd6cWRkcnZNQnl5SWxsNnJSeFFBQVpoUFJSZVlXMQ?oc=5",
+      "https://news.google.com/rss/articles/CBMijAFBVV95cUxOUEg1MW5SYnlxWnhHaFo0VzRsNjRHMnVBdVVmaHMtOEFsaEU2Q040LVBod193azVKNFo2TTk0R3l6cG9vdkVRU2hNUEsyc1ZtcU9XVmZ0UG4xZm9uOVFXX1JXNkRwMTNqNDkwcGFIOU5tb1N2bXIwS0tnNXdjUlA3U0hLSG9ZOXlray03Mw?oc=5",
+      "https://news.google.com/rss/articles/CBMikwFBVV95cUxObWR6dkdNaUgtZ1hkbHA5STNNU1g4Vnpua0EtWVFaSE91dGhQMVprTElyOENITnMzbDgwLWYwZzQtNXBqSEFRWFNVVDBfUVkxT2ZHSU5GSlpyWnlTZlhfQ210WkxYYmsxODZia1RoU0dSLVdRV05WUGZnaVVHOHlEOWVTbU9ZcC1yX1FpR0h1MTJ1WVk?oc=5",
+      "https://news.google.com/rss/articles/CBMi5gFBVV95cUxNanZNQldpR1FkOVVXdnc5M1BjbXVMZzFJdXdBUEwybEV1b29HdHNQT3lBb1FjNXJIR1dnNWZrb0ZPZzN0M09xT0VWZUpOdUtnM0I3WHdIVng0ekhlbTFfSldseXVGbUEtWUVzbnM3blFsdjRNTDJzT3Y0TXVpbXhhaXdmMjF3LTBkNEpGSWUyQ2tqRkctdm5mNlJOMkEyNlA4RGhZX2VGdTNkTmp3bk9DSWVjaGxXRV96NXhYUnJrYmRKTnVvUmtOUDhoaENuQ2hFMDBqcHQyYTBQWWdtM0tZUTV0eGI1QQ?oc=5",
+      "https://news.google.com/rss/articles/CBMie0FVX3lxTE5ZdGMyYWtuLWs1c1NXVVNNZzVGQ0lSLXJNdnVWd3BIWjVHMExCbERmTm5rNk4wSkhjVC1sYlR1QXJwUF9LZEpkT2pDZUJXc2dSMkZtMVY4WXFrZTFjMHVjbFhfeDQ3OEhua3ZTVWktNkE0RlR4MWRsdHQwZw?oc=5",
+      "https://news.google.com/rss/articles/CBMiogFBVV95cUxPcFhyTDAtQ2hGSHhfWV84aHVaczVkalpZWXFVcEFzeUJFYXNjaTRRazFYZmxjbUxSMFlEakYycmpKZk9ISzRJX2lyYVlwZGVyUmxRTm9oN2ZfelJyOU9paVZ4RHV2Ml90cXZCa01DZFZGdkk1aDlQYmpJMUY3a3I0bXZMNDFrbFBSNEpad2lPa196Q2FCbzE2Y095UkdBelRXdnfSAacBQVVfeXFMTkJSOGctWkhXX1FrLThSRV96dVhUQ1JGeGdPbU1OWjNwVmRvc0w5eV9XOWNFcE1mVlZwQmNTLUZ2R0ZWWWdxRU5pcTNXcnFQNUdrTlZRQmhwQ091VWlDcGxYNjNzeTk3aGNwT1FiY3c4OWdvaW5xVVhzSHgyS2l1bWdxc0d3Q2ZzNzk4WHVnQ3NUbVp4YkFaRk90aEYzc1Y2MzFJQTltd0E?oc=5",
+      "https://www.cpf.gov.sg/",
+      "https://news.google.com/rss/articles/CBMisAFBVV95cUxNRS1pSUNuNldXSmFVNHF2SEtNVDlFMGlpbWFkdW85d00xVzMtUWxmdk5tc3hVNHhyYnpYX1RjeWdUOW91eG9CTm5lTl9wcW5qZm5iT0JINXIzZnFtT21lZTY3VGE5RExpSWIwSmF4dWttSHI4RFRxaGFkcUxHWlY4QWtYc2M4OU5rTWRGVkU2VFFkc2djTVRDbG4tVHRJYnpTQ2RZVWU1STFxZkVJZG9LRw?oc=5",
+      "https://news.google.com/rss/articles/CBMiekFVX3lxTE5YTldDSDZBUjRMdnh2U2RHZGNSODBYNjduUURLenFlT0x2UkItci0yWkE0VndNbUtGVFk5Z0NGMm0tbUhjLVVEaGkwZ2RwYnBNaXI3cDBoUTBqNVBhRDhqeVZINXpncnJJbThiTjFHMVZub09XU204SXZB?oc=5",
+      "https://www.nus.edu.sg/",
+      "https://news.google.com/rss/articles/CBMilgFBVV95cUxQV1JndFJUMTZCdjRvS2ZWZjFwcmI0VEtiUUxqaUU5YjYydW15TEVxUHZVRllveklEalZGa1dVbjZ5RHJSd0RhbVVGOE5LYU1oR1E2QlN6TzZYRTFpdjJrTVhUUTdtNEo3NHBLMVpPNl80LXpXQ1czVThzOWQ5dmVOb1hsQmlJd2xjOUtTVDBFc3JxQXhLdFE?oc=5",
+      "https://www.gov.sg/",
+      "https://news.google.com/rss/articles/CBMimgFBVV95cUxQTWE2QWFvZzN4YkhmN1VVdE81QUFwbHlZN0NXWmV5UkRUSmZObkcwUllIbkNPTnJIMm4yZUp5aWZYdnFOX2NDMzhhY0YxTVotYmltX3NTVm15cjBzdXI2QTAzOUwtbm95MmltWnNkZU1qcnVOSjZHMFkzNm9RYVQ0eGwxOVozdFRzT1lWcUlQdTlXTy1mSVBiVU5R?oc=5",
+      "https://news.google.com/rss/articles/CBMilwFBVV95cUxOVy1VcFd4RXktT0M2bjVPdUtscGVnS0h4MEFNcDJXWUhyT1RGY0d4ZjRCcVBRakxmamdJR21BNUJwYjQxVnpVbmU2aW1ER01HaXpsZ2JnRVNSVzFfbzhlQ3hBYUdiMmxpcU85LUJZcVJkQXBNOEpsT1NzZlFhYXZLd1VlUlRDYTRyLUZXRnlQYUFkTkEyWG5Z?oc=5",
+      "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWEdycmtUcWotNFMzc0ozTWRrcnpkM2ZDN1drNzFhQ2hRVlFLV2xXRXhtazZ4UEc2TmlUbzQ3dWpQMmhpdkFKcXRxRlN4RE1HdzVKZDFLbHNXSTEzZHFZVlp3c3dJWktkcjJEWTNCU1NTdVBpZG50TENNbnZhRnh6bHh4VFd5WDVuNEpnQkwzZGJTdWowaXJCLXhINzZIamdKVHRUQm14RGZaTW91ZEhv?oc=5",
+      "https://news.google.com/rss/articles/CBMif0FVX3lxTE5kdzdpc05wN19tcnpLbElWM2o4NWk0VThLejhUdThkTHhMX19QNHBDQkRkdmM3WnRLekMtYmppWjNhZmVQQmVHUDFEem5DME5FclV5VjNSbmhkZ1hjajFyQ25sU2xSRXpFdUpuMVVfdElFeXpfQlM5V3dGVVYwVzQ?oc=5",
+      "https://news.google.com/rss/articles/CBMisgFBVV95cUxNLVE2ZVAtcUZiRGkyamRTcVpQSmVpUlE4TE9KTHlHXzZhamVaN0ZnUDBRSjRxZWNLejlRYUVRN01BbkRXNHFTVHNiakIwUWVoNEppdE4tQ3pjWDBwNnhUa20tSktuU20wRUQtd1BCRUc5LVVPTlF1QTJfLTJ0T0ttaVlEelBXTXdRTmt3a1c2aGlnTjE0cnRVZ3RtRzZuWjMwekRTM2lFdWN3bE1MdGo1dzR3?oc=5",
+      "https://news.google.com/rss/articles/CBMipgFBVV95cUxPS3ZpekFXeXlBb0lneEJ1Q2hING5hbVpKcnl4UUhHcWlSNDE1bHc4dm9kdmdfUjlOd0VwRmNCMnVnZkw3dzBBX0U1S3pGTi1ycms5TEhkckQyNlFEN0c0alRmQmNwSUU0OVZsMW54MVZyTF8zVndGSVFqY2hmY1gtNzRDdS1zNTFhSGxoMkozYzhmSDhFeVdPNjhJSmN2ZHpQdG1VaFFR?oc=5",
+      "https://news.google.com/rss/articles/CBMizAFBVV95cUxNUFRwY3V4MXd2YlJPYUV2X3JVOTdCb1VHXzh5SmxZaVJTZS1zcnA0aWN2LXJQRHljNUN0YlNjcklpdHV6THpBdUZ2Y0NxS2lJMEVmX0lYZlBNWVp5QVdQMWNuc1kzODRfZk9TdTFVYjZ0T1ctYkxkWTRyeXFGTS1DMUcxUndJcmpsUVBFdWlFWFFrR1Z3UnltUU92bk0xMjgtd3RHZ0NKWGNqNFJoS2hNaEVwWURKOF9ZdnRVSGpQU3ZtaTluNXBYNXBpY2g?oc=5",
+      "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPNWdVYnJ2dUp4NjB0aFhUdlgtd1lIVVFFMlRHSGtIUUpiUmVvdDBaYmR4YkxkWTVOU0cwbDRQQ0ZqWDZIc0F5N2xGYmZOQTkxYWI0WHY5RTVzQlRGUWFTVFFzb3hnaGhsT3NSUThSMTJTZnhTSXhtUnh3ZjEzeHhFV0x6WDlYeUc3ZkJ5T09zTm5GTHlOdDdwcWptOFd3SkYzcktyWGxTX0hhdGM?oc=5",
+      "https://www.fairprice.com.sg/",
+      "https://news.google.com/rss/articles/CBMikwFBVV95cUxNcDZHWFBDUl9lSnZXbWR3c2hyVmhfTmVBaW1Ib1dUVGJRaW9LSUVWclpYbnlMbzU2cXQ0blVjZE1TQVhFTmQ4WHQ4Y3NNNnlRV3c2VldvMmJkaEl0WmZDVXl0M3VWa3YxTUNfRVJJSFZ4WWZJM3JpbmVPMlRtdjRVcVZ4MTZrZTlGVnJYRDNGS1dIUlHSAZgBQVVfeXFMTzJKWm1TbnUwWjNYbjJoVzFZc1lsS1RFWktEejBBYlRoZ0dEN2drNG9ydF9rSlA1YmhNYVg5RHZGZ0tQeVY0Y3ZwbFJoUDNrNkpleldhNnJUYmZwOFc5NWhaNXpUb3ZLVTdocmwzeThHbXJJamdSVzZLRUpTdDhOUGRIZFozVGdFcHZqa1ZPQ1Y1WDBTUm42dDE?oc=5",
+      "https://news.google.com/rss/articles/CBMinAFBVV95cUxQYXN2MUJrbzFzbFpMVHVzQlYwd0xsT1V6amk1V0xVdHo1Z2JtVXZwNWIyay14dEttRkJ3ZnZxQjRHczVOZldKNXFrMk5VdmZVZlE4OEJXcTc5NEotU3I5bEJwSGpmNy1nQ3U3Z29XdmJMY1k1Y3BrWHoySFJDeUY5WkJyNWZuOF9vdkRWS2dhWF9rZUZCSkdKbERkZXc?oc=5",
+      "https://news.google.com/rss/articles/CBMib0FVX3lxTE5RR3FFbTJlNlFBMjVVN0locVQ4UGpNeFFzLVNLeGwxbF9nbExYWEhuX2w3VUZpMFFGREtWcDlkdUd0X1pUczRId0ZOMWpleWxLRjI3S1J0YmNwN3d1Q1V4cW1iVGY4OGVJZGxhVFNaaw?oc=5",
+      "https://news.google.com/rss/articles/CBMinAFBVV95cUxNXzd5SFpoelhNNE1pOXBCQUtGbFlkblRHRkpodE5VUDBJUWZjNUVucGxBVDNZc0xmb2E5VG9hS1NENEF0NDU5cXVjSFhTM0I5QjZHMWx6S0drZGFobGZRMFZmdHNpSFpralRfcDcyTjkycXhrXzBmVGRUaEt2TWtCMlNJMzVFUVZuTDhJcURPZy01SEh3akdmaHE4aGY?oc=5",
+      "https://news.google.com/rss/articles/CBMinAFBVV95cUxORTkxbGktQ01rTlZCWFJPM19fVkwwdkRpY2xPb242d0VUc2VqQUpfWDhpN1I4VFlhNVhYR0pjMlhPdTdlNmJ5NkljWG1ycHY4ejh0RHJMeWRHMjZOa3Y2OUlnOGZPZUtrMTFEU2dCdkV3QU1oMjlibEwwX1JlRjlWQk96cVdRbHRLenUyNk9mUVZ2NlBVVFpDS1JOMng?oc=5"
+    ],
+    "static_urls": [
+      "https://www.gov.sg/",
+      "https://www.nus.edu.sg/",
+      "https://www.dbs.com.sg/",
+      "https://www.singpass.gov.sg/",
+      "https://www.shopee.sg/",
+      "https://www.fairprice.com.sg/",
+      "https://www.cpf.gov.sg/",
+      "https://www.iras.gov.sg/"
+    ]
+  }
+}

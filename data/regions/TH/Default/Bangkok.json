@@ -1,0 +1,50 @@
+{
+  "region_name": "Thailand (Bangkok)",
+  "google_module": {
+    "base_lat": 13.7563,
+    "base_lon": 100.5018,
+    "lang_params": "hl=th-TH&gl=TH",
+    "valid_url_suffix": "co.th"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://news.google.com/rss/articles/CBMia0FVX3lxTE1iTTFMV1VzYXdMOE4xSDFwdFM4OTExV2k4NmtJWGktSmd4RFFOXzlDVERTRGdCVHU2LUt2eDdURmVnQWJ0bVJpbFdFaUl3eDVsb254ckJNcXNjZG9ad0dHTnBiZThCOEhGSEE0?oc=5",
+      "https://news.google.com/rss/articles/CBMi4wVBVV95cUxOeXV4SGNnZHpyZmZzWXhOZjJBbkpuS21OUm10LV9IZF9POEFwRk82UFBJMFNFMWJLZDZtQzNUbG1uQmgwdC1CNG80a2R4a282bTl0NHZac1gwMFRuOEFOQmVXMGowVWVGUC1rbkFaVXVVUW5jeDBkekZaLTVwWEZQbTZPcnRNdWdaRndkQmJ5amNZaWRreHZGU3ZjS3RfdW1GTTFaanhFZ2VKRmVfM3BjRmRmSlBzNlZvRGlEM2Zha2Z0Y1NzbHpwa2NnaFMxeDVvWV9oSmt2S1hLZkpUal9hdEFiUzctaDVCNFF0VDN4S1BnZUlPMG9ZU1pCNEVReUV4dXNVZEdYeXh2ZkRFQTZYOHFKUXp5bUZaLUNKeFBZa0gtR3RrbFl1MGN3WGhUbFZDLWJMS2g3cldBdmMzRkhZUlNjNk5JTmFNdUhaMWFFNlo2MHFEQzhVQnlwa3psWFBiektlbGxZanhuYXM4cEk1S3RsRThNN2E1TUh6dUlfUHB4WWE5WFhlWGoyd2N2ZVI5S1V6amo0T2w3R01jQm1PUjJXOENIVzB5c0NZMnJSMnBYRWhDOXlYNVF6SUNkQkl1cDVhMW1uNE5vbTBvUzFfbGdpamdabkZlT2d3TVRDaGV6TldNcklmRF9mVlptOTZxTTdzQ3I0Y0N5R2ZYSThISkwtbHItZVN3SXdYWFJ6NmJtRHJtZXV0SDR0Ni1rb2RZaXRyRGVXWi11ZUI0VFJUakRSdnRBQXFqdDdKd3duWE9uekh4cFNabS1jeDBhSk8tekJCMlN4dEdQa3hsZmJ5QVl0NTBWcVp4aHRieFRIYmlZeUdteW91SU9rbV9YcnVYMjAxOG1tVnRpLVdvblpOTm13aVoyYTVvMU91dkgtSWwwMEFmWk9tVkxad0pvX0RBZTlyVXJlUEJTR3ZBcjdOeUZnTXdmQTNxUUZMekRnRkxyY3pwSG5XbndfdEVNcjdCRkxn?oc=5",
+      "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBnRlY3dDBjZHNjU3BVRWFUaHRLRjNkUG00NXZ5RDBXeVhiZk5FX2JGeXhac1d1b2Rka250Q3dGQjhSbzdVRzloQzVuTm5LTkhaVEdhVExyaGE2SWc?oc=5",
+      "https://www.thairath.co.th/",
+      "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nMFEwVEp3QWE4Uk9iQkIwNFU2STFzdUIyVUpYNnJ4SmtIaG9Ba18wMjJNeG1zNmxBTXBOWmd0cnBUUWduc090T3BxcFc4ekJJQUl6d1c0d0RVR21zUkJibmlQeHZKSWZLRW9pblRtYmZaU3p5SVJqSGFR?oc=5",
+      "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1La01kc2lrMzFRVUFjbVZvMml4dmVFRUZyOEI2d1hBcGxoRXQwdFNNWXFaUUtSd3doYXlVdjhCaERGWWhycEhCNGk4alA2VDVLMjdRN2JURDc?oc=5",
+      "https://news.google.com/rss/articles/CBMiYkFVX3lxTE1senFfdFdGV1U1aG9DazJrV2ZQYWdwQm5lN0NPNjlEbXJVWllpeXhSelI4LU5nT2ZMakItdVlCX0ViajN3aWhrdF9KRDdqeTlGZ05jSkgxeUJ5VkZ5YjVzUkZn?oc=5",
+      "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5hU3JLZTc3M1RudHJRTFN5Z2VZc05IbVlSSVU5QnI2ZTUyMmNLbTlYOERYRk9sckFnam5MMHJhRDhreENLeGVpb3pXajViaF9yLWtoVXpOUnV3YWQ4VXdzQg?oc=5",
+      "https://news.google.com/rss/articles/CBMiugJBVV95cUxQZi1rbE9GTGY1S0ZDRnhUM1A5WmlTZFBhRU1Tbm1sWG5wSDJkNFh1c09BWUFLRlhRM1dWcUhvWlcxU19CbnNkaElQcTJtcThLUUxSWmZ4YmtFdlZycjZWRFRXa1lnSm9IcndGbUtqU3E1c3MxMEdVc3RMY2l6aWR4MkVzenhaOGg0UWlXSXdGRWVoQXJJdzJCUE55anJXR1h3N19CbldWalhHdFpuOWgtYl9oX3VDMERDNmFnaEstXzFXUUNMNkJRTXdGXzFRNWpCRWlLWUp0ZFJpSHNrRWpXaktmdGRzcjlfT0tWUWR1MWtFcjU2UmpjWEFRUnJJckQzRzN5QmNYNjYtdk1BQi1aQU55THJNb0JHSDl1ankwUFpFdkRoM3YzR3RhUnVueTlYVTE0alM0enhPUQ?oc=5",
+      "https://www.thaigov.go.th/",
+      "https://news.google.com/rss/articles/CBMia0FVX3lxTE1MYmZ1Vk5Rcmp4M0FIRmpHNGVKWGMzM3FFaDV5b0EyUU1GVS0xRWJUYzJwZkpZSDNrUktYeHI5MWZDemhqYWhmem5rQWZ3cVFZdXM2TENpTnh2TUdmaWt3Tmdpbm5VWlZIR1hN?oc=5",
+      "https://news.google.com/rss/articles/CBMiTEFVX3lxTE1EeFhKNk1VbHRHMFVRS3lCRlhUb1pGbE01WDljUmk3ZlpqUjFMZmtYY0ZnLUx3Rk43R1lCUUdiRVZhcm8tLTdCeEpadi0?oc=5",
+      "https://news.google.com/rss/articles/CBMiXEFVX3lxTE83REtjaVp5OV9zejYxdHRsV2NlYkZKOWNiOTZhWi1SS1dKdTFOQ2JxaEtlX0NTTFJyQU1TcmpCWUV6c3lWb0tkY3hJdzZVSXhJTTRpWlQ0NnhpZDZ0?oc=5",
+      "https://news.google.com/rss/articles/CBMiSkFVX3lxTE9EYU5IZlFNamlXcmlyV0hxZC0waVNNZVBDUUQ0Q1ZkS0FkblZ5T3huWk1ZUGE2MTRHZXlDVmtkRWctOUtNbGRwSGtn?oc=5",
+      "https://www.bot.or.th/",
+      "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1ZZThUSG5aTXI5cnBrOVJkVm51QUFZdW8wOHJMNTRjWjJBbW1Pb3F0UTNjaXNkWmhUX2ptRDJTd2NTaXViX05RUG1CeU1RaEVoQUVwTlBDMDI?oc=5",
+      "https://www.bangkokpost.com/",
+      "https://news.google.com/rss/articles/CBMiowNBVV95cUxOMDRmNElTNldsOVljTTJ5aVJVQ2NDWUlTc2pQc2dLSzVSMjVtQnE2emVJdzBMRnBtSjFOdmNBZFllUXd5UVdYcWpDTDN1VTgtYmZDTnludTQzZHp6aFd1YUJtRGZESnRHeG1YemNFTUFYWHdUbjN2Q2dXWFJ1b2x0aUMxQTdIUG8yZko3OEw3RFN2TEs4UDdsVUxwN3kwcDNSbGtfQTA3cm5ZcjliaTlKXy13clhldlhlSnBHazNWZjc5ZFphWVpFQnRwU1JINGNVZUw1UTVUd3BUNW1tRGlfdFlDSlJkTUQ1bmdIYzU0MFZ2a1FHT2xkM0daZXRYUFN6T19HRkhuLWQwdUEwZlAyN1h6dm9FaU1RRHBFUFNndDJ2bTQxckhUR2ZUUEdrQWhvczZZSTRCU2JQdjhRR09IZzZwaGVtUjlER1kzWC1PeUZNMDAtRGttMWo3VG1jUVF1bTN5eWJhZzVfRGs1XzlhcFVoUEZvY1ltc0pYTklXVXBlNEpLdloxS1VIQy1lSDRzQUZXUXNKMDR0UDk2eFYtZlpyUQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiZEFVX3lxTE11R3gydElfdFVaR2RTMmRLTUxXNFJiUTF1MzlNeFJvZFpsekRWblB4Y2dJWFlWRDlzWWF5OUhEZS1XY0JocWNrRjdZaTExMXhrQk1zRnRMVGREM3FDc3RTMFU5YUQ?oc=5",
+      "https://news.google.com/rss/articles/CBMia0FVX3lxTFBpSUN6UklFZG5mZW04OTY5bklpZnAxdzNBRjBYSnR1aUpORmNJRFpnR3g0Ulpvb2xhRkppdk85ZmV5NUdWZC0zaldBZkQ4TVJvYnRZR3h0UmJpb2pFUmJLM29jbHdyTHV3N2lF?oc=5",
+      "https://news.google.com/rss/articles/CBMiXkFVX3lxTE5PU01FZlVnLXI2YnQ1UHZ3SEpKYW1JUVNreG9xSHktakdRQ21YOENZRC11bXZfNDUycGJhbVdNUFB4REJ5Qk9XRVYwcHFDb2Y1dE9NRGVmTTZ6N3NxYUE?oc=5",
+      "https://www.set.or.th/",
+      "https://news.google.com/rss/articles/CBMiWkFVX3lxTE41V0N3cVZXdHBVbXpKamZJZVQyMF9FSHpvRDRyMHJoaDJWMTdJREotTkU1ZkZKRm9xSEdRclI0dU40UExsWjBqR0V3XzBqcG1MazM0QW4wbEF4UdIBX0FVX3lxTE5DbVVQWVFnQllFb0pVaFBPNmRrcl9pZWdWUUZVOVllNlE5R0xwcWFuNWptdVpvS2Q4NjBlRDNjX0lBZGFXal9hSjdLNlVnU05la2ptZ0pCSlF2ZVNfUGMw?oc=5",
+      "https://news.google.com/rss/articles/CBMia0FVX3lxTE1uOC1zaHBqMXJMYXhqQUpyQ1BWQXVtNHV2NHlvR29fdHhrTGNmekpxZko4dmdGZnJjaHN3c3NaNlBPdnY4UVNNeHFoY2ZHWmh3dmpkOVRFY1JaNDVXQ0pHYjFVbW05WGU5RU40?oc=5",
+      "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBjcWk1LXZvbTRvMno4Vk1GTkY4MUJ5UDVKQ3BjVzR0UkV5b2ZIQVJ6aXpqRmVEZlloOWRrRkpIcDktWlUtbVZCd2ZKVEZzLTVSanlUOTZvRnN0ZFJqWkE?oc=5",
+      "https://news.google.com/rss/articles/CBMiV0FVX3lxTE0ydFNZYWdzZ214OEpzemp5QTRTc09nQzBxcjQ0eXpvNWhzdTZHT24xN2tycDZ1M0ZLVHRuYjFMb0ZuamxjRFFJUzhFMkhWZm9WOTI2TFFOVQ?oc=5",
+      "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBRQmk3TUdMZldfenBJYm5rdFl0YWJkQjdaX2hIRTdOOXBKYXh1cHl3c0t2d1ZwMkhhXzVTS0N3YkppR0RqdzVVZU5PUFdRRTJTUjBjRkhGa18teVhOZ05QUg?oc=5",
+      "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1ualNYV3N5MUV6czFZQ2paSUcwRWpjeS1lTmM4djFGaHR2TllsdEhNcVRYU1BjQlJZSHcwM1o0b3pPZ1ZOTnhsVk55aXAwNktTblN5Y0N3?oc=5",
+      "https://news.google.com/rss/articles/CBMiYkFVX3lxTE04S2tRemJFNmRpa0E3elNSaFRjaUtaNkQ4cXhmYzV1MTZVS2xyZUNKVVM0TU5MRnVON2FIMjAwcDBDXzFZSkh3eHM2MG40QWE3LUx0ZkFOVkZ5RXB4RW9CdlJR?oc=5",
+      "https://news.google.com/rss/articles/CBMiWEFVX3lxTFB4cWcxNGJQdlFvYXRJTjItMXowRWNNUVFYbDNYS05vbmZPejlKRllDVDZFR3Q0SGR3XzM4WG0zRjQ4cDJUaERDZ25OMVBZOFYzVFUtWTVCY1U?oc=5"
+    ],
+    "static_urls": [
+      "https://www.thaigov.go.th/",
+      "https://www.bot.or.th/",
+      "https://www.thairath.co.th/",
+      "https://www.set.or.th/",
+      "https://www.bangkokpost.com/"
+    ]
+  }
+}

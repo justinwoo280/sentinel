@@ -213,6 +213,28 @@ func (c *Client) AnswerCallbackQuery(ctx context.Context, callbackID, text strin
 	return nil
 }
 
+// BotCommand is an entry in the Telegram command menu.
+type BotCommand struct {
+	Command     string `json:"command"`
+	Description string `json:"description"`
+}
+
+// SetMyCommands registers the bot's command menu (the "/" suggestions).
+func (c *Client) SetMyCommands(ctx context.Context, cmds []BotCommand) error {
+	body, err := json.Marshal(cmds)
+	if err != nil {
+		return err
+	}
+	v := url.Values{}
+	v.Set("commands", string(body))
+	resp, err := c.apiWithForm(ctx, "setMyCommands", v)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 // EditMessageText edits a previously sent message.
 func (c *Client) EditMessageText(ctx context.Context, chatID, messageID int64, text string, kb *InlineKeyboardMarkup) error {
 	v := url.Values{}

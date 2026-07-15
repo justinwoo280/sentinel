@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"sync"
 	"time"
 
 	ewp "github.com/justinwoo280/sing-ewp"
@@ -102,6 +103,22 @@ func (c *Client) Run(ctx context.Context) error {
 	}
 }
 
+// connWriter serialises frame writes to a single connection. The EWP
+// SecureStream is not safe for concurrent writes, and we now write from
+// several goroutines (heartbeat, and one per in-flight command), so all
+// writes must go through this mutex.
+type connWriter struct {
+	mu   sync.Mutex
+	conn net.Conn
+}
+
+func (w *connWriter) write(ev EventMessage) error {
+	out, _ := json.Marshal(ev)
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return writeFrame(w.conn, out)
+}
+
 func (c *Client) connectAndServe(ctx context.Context) error {
 	d := &net.Dialer{Timeout: c.cfg.HandshakeTimeout}
 	rawConn, err := d.DialContext(ctx, "tcp", c.cfg.MasterAddr)
@@ -122,6 +139,8 @@ func (c *Client) connectAndServe(ctx context.Context) error {
 	defer conn.Close()
 	c.log.Info("control connection established", "master", c.cfg.MasterAddr)
 
+	w := &connWriter{conn: conn}
+
 	// Close the connection when ctx is cancelled to unblock the blocking
 	// readFrame in readLoop (otherwise cancellation would not be observed
 	// until the next frame arrives).
@@ -133,26 +152,20 @@ func (c *Client) connectAndServe(ctx context.Context) error {
 	}()
 
 	// Send hello event as first frame.
-	if err := c.sendHello(conn); err != nil {
+	if err := w.write(EventMessage{Evt: EvtHello, Data: mustMarshal(c.cfg.Hello)}); err != nil {
 		return fmt.Errorf("send hello: %w", err)
 	}
 
 	// Start heartbeat ticker.
 	hbCtx, hbCancel := context.WithCancel(ctx)
 	defer hbCancel()
-	go c.heartbeatLoop(hbCtx, conn)
+	go c.heartbeatLoop(hbCtx, w)
 
-	// Read-dispatch loop (single goroutine — EWP Recv contract).
-	return c.readLoop(ctx, conn)
+	// Read-dispatch loop.
+	return c.readLoop(ctx, conn, w)
 }
 
-func (c *Client) sendHello(conn net.Conn) error {
-	ev := EventMessage{Evt: EvtHello, Data: mustMarshal(c.cfg.Hello)}
-	out, _ := json.Marshal(ev)
-	return writeFrame(conn, out)
-}
-
-func (c *Client) heartbeatLoop(ctx context.Context, conn net.Conn) {
+func (c *Client) heartbeatLoop(ctx context.Context, w *connWriter) {
 	ticker := time.NewTicker(c.cfg.Heartbeat)
 	defer ticker.Stop()
 	for {
@@ -160,16 +173,14 @@ func (c *Client) heartbeatLoop(ctx context.Context, conn net.Conn) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			ev := EventMessage{Evt: EvtHeartbeat}
-			out, _ := json.Marshal(ev)
-			if err := writeFrame(conn, out); err != nil {
+			if err := w.write(EventMessage{Evt: EvtHeartbeat}); err != nil {
 				return
 			}
 		}
 	}
 }
 
-func (c *Client) readLoop(ctx context.Context, conn net.Conn) error {
+func (c *Client) readLoop(ctx context.Context, conn net.Conn, w *connWriter) error {
 	for {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -182,19 +193,22 @@ func (c *Client) readLoop(ctx context.Context, conn net.Conn) error {
 		if err != nil {
 			c.log.Warn("rejecting malformed command", "err", err)
 			// Send error result without an ID (we don't have one).
-			errEv := EventMessage{
+			_ = w.write(EventMessage{
 				Evt:  EvtResult,
 				Data: mustMarshal(Result{OK: false, Msg: err.Error()}),
-			}
-			out, _ := json.Marshal(errEv)
-			_ = writeFrame(conn, out)
+			})
 			continue
 		}
-		c.log.Debug("dispatching command", "cmd", msg.Cmd, "id", msg.ID)
-		ev := Dispatch(ctx, msg, c.exec)
-		out, _ := json.Marshal(ev)
-		if err := writeFrame(conn, out); err != nil {
-			return fmt.Errorf("write result: %w", err)
-		}
+		c.log.Info("received command", "cmd", msg.Cmd, "id", msg.ID)
+		// Execute each command in its own goroutine so a long-running
+		// module (google/trust sessions can take minutes) does not block
+		// reading subsequent commands or heartbeats. Writes are serialised
+		// by connWriter.
+		go func(msg CommandMessage) {
+			ev := Dispatch(ctx, msg, c.exec)
+			if err := w.write(ev); err != nil {
+				c.log.Warn("failed to send command result", "id", msg.ID, "err", err)
+			}
+		}(msg)
 	}
 }

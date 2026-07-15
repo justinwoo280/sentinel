@@ -81,14 +81,40 @@ func (q *Quality) fetchIPinfo(ctx context.Context, result *InfoResult) bool {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-
-	var data map[string]any
-	if err := json.Unmarshal(body, &data); err != nil {
+	r, ok := parseIPinfoBody(body)
+	if !ok {
 		return false
 	}
+	*result = mergeInfo(*result, r)
+	return true
+}
 
-	result.IPinfoASN = str(data["asn"])
-	result.IPinfoOrg = str(data["org"])
+// parseIPinfoBody parses an IPinfo response (demo widget or plain API) into
+// an InfoResult. The demo widget wraps fields under a "data" object and
+// represents "asn" as an object; the plain API is flat. Extracted as a
+// pure function for testability.
+func parseIPinfoBody(body []byte) (InfoResult, bool) {
+	var raw map[string]any
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return InfoResult{}, false
+	}
+	data := raw
+	if inner, ok := raw["data"].(map[string]any); ok {
+		data = inner
+	}
+
+	var result InfoResult
+	// "asn" may be an object {asn,name,domain,...} (widget) or a string.
+	switch asn := data["asn"].(type) {
+	case map[string]any:
+		result.IPinfoASN = str(asn["asn"])
+		result.IPinfoOrg = str(asn["name"])
+	default:
+		result.IPinfoASN = str(data["asn"])
+	}
+	if result.IPinfoOrg == "" {
+		result.IPinfoOrg = str(data["org"])
+	}
 	if loc, ok := data["loc"].(string); ok {
 		parts := strings.SplitN(loc, ",", 2)
 		if len(parts) == 2 {
@@ -98,15 +124,37 @@ func (q *Quality) fetchIPinfo(ctx context.Context, result *InfoResult) bool {
 	}
 	result.IPinfoCity = str(data["city"])
 	result.IPinfoRegion = str(data["region"])
-	result.IPinfoCountry = str(data["country"])
-	result.IPinfoCountryCode = str(data["country_code"])
-	if cc := result.IPinfoCountryCode; cc != "" {
+	// The widget uses "country" for the ISO code (e.g. "SG"); the plain
+	// API may use "country_code".
+	cc := str(data["country_code"])
+	if cc == "" {
+		cc = str(data["country"])
+	}
+	result.IPinfoCountryCode = cc
+	result.IPinfoCountry = cc
+	if cc != "" {
 		result.IPinfoContinent = continentName(cc)
 	}
 	result.IPinfoTimezone = str(data["timezone"])
 	result.IPinfoPostal = str(data["postal"])
+	return result, true
+}
 
-	return true
+// mergeInfo copies IPinfo fields from src into dst (dst may already hold
+// GeoIP data). Only the IPinfo* fields are overwritten.
+func mergeInfo(dst, src InfoResult) InfoResult {
+	dst.IPinfoASN = src.IPinfoASN
+	dst.IPinfoOrg = src.IPinfoOrg
+	dst.IPinfoLat = src.IPinfoLat
+	dst.IPinfoLon = src.IPinfoLon
+	dst.IPinfoCity = src.IPinfoCity
+	dst.IPinfoRegion = src.IPinfoRegion
+	dst.IPinfoCountry = src.IPinfoCountry
+	dst.IPinfoCountryCode = src.IPinfoCountryCode
+	dst.IPinfoContinent = src.IPinfoContinent
+	dst.IPinfoTimezone = src.IPinfoTimezone
+	dst.IPinfoPostal = src.IPinfoPostal
+	return dst
 }
 
 func (q *Quality) fetchIpapi(ctx context.Context, result *InfoResult) bool {
@@ -119,23 +167,45 @@ func (q *Quality) fetchIpapi(ctx context.Context, result *InfoResult) bool {
 	body, _ := io.ReadAll(resp.Body)
 
 	var data struct {
-		Asn          any    `json:"asn"`
-		Company      string `json:"company"`
-		Usage        string `json:"usage_type"`
-		IsDatacenter *bool  `json:"is_datacenter"`
-		IsVpn        *bool  `json:"is_vpn"`
-		IsTor        *bool  `json:"is_tor"`
-		IsProxy      *bool  `json:"is_proxy"`
-		IsAbuser     *bool  `json:"is_abuser"`
-		RiskScore    int    `json:"risk_score"`
+		Asn struct {
+			ASN   string `json:"asn"`
+			Org   string `json:"org"`
+			Descr string `json:"descr"`
+		} `json:"asn"`
+		Company struct {
+			Name string `json:"name"`
+			Type string `json:"type"`
+		} `json:"company"`
+		Datacenter struct {
+			Datacenter string `json:"datacenter"`
+		} `json:"datacenter"`
+		IsDatacenter *bool `json:"is_datacenter"`
+		IsVpn        *bool `json:"is_vpn"`
+		IsTor        *bool `json:"is_tor"`
+		IsProxy      *bool `json:"is_proxy"`
+		IsAbuser     *bool `json:"is_abuser"`
 	}
 	if err := json.Unmarshal(body, &data); err != nil {
+		q.log.Debug("ipapi decode failed", "err", err)
 		return false
 	}
 
-	result.IpapiOrg = data.Company
-	result.IpapiUsage = data.Usage
-	result.IpapiScore = itoa(data.RiskScore)
+	// ASN
+	result.IpapiASN = data.Asn.ASN
+	// Organization: prefer company name, fall back to ASN org/descr.
+	result.IpapiOrg = data.Company.Name
+	if result.IpapiOrg == "" {
+		result.IpapiOrg = data.Asn.Org
+	}
+	if result.IpapiOrg == "" {
+		result.IpapiOrg = data.Asn.Descr
+	}
+	result.IpapiCompany = data.Company.Name
+	// Usage type: company type (e.g. "hosting"), or datacenter name.
+	result.IpapiUsage = data.Company.Type
+	if result.IpapiUsage == "" && data.IsDatacenter != nil && *data.IsDatacenter {
+		result.IpapiUsage = "hosting"
+	}
 
 	return true
 }
@@ -150,8 +220,17 @@ func (r InfoResult) ToJSON() Info {
 			}
 			return &v
 		}
-		info.ASN = s(r.IPinfoASN)
-		info.Organization = s(r.IPinfoOrg)
+		// ASN/Org fall back to ipapi.is when IPinfo lacks them.
+		asn := r.IPinfoASN
+		if asn == "" {
+			asn = r.IpapiASN
+		}
+		org := r.IPinfoOrg
+		if org == "" {
+			org = r.IpapiOrg
+		}
+		info.ASN = s(asn)
+		info.Organization = s(org)
 		info.Latitude = s(r.IPinfoLat)
 		info.Longitude = s(r.IPinfoLon)
 		info.TimeZone = s(r.IPinfoTimezone)
