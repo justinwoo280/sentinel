@@ -85,6 +85,7 @@ func New(cfg config.AgentConfig, cfgPath string, log *slog.Logger) (*Agent, erro
 	if cfg.GeoIP.Enabled {
 		gm, err := geoip.NewManager(geoip.Config{
 			Enabled:        cfg.GeoIP.Enabled,
+			AccountID:      cfg.GeoIP.AccountID,
 			LicenseKey:     cfg.GeoIP.LicenseKey,
 			DBPath:         cfg.GeoIP.DBPath,
 			UpdateInterval: time.Duration(cfg.GeoIP.UpdateInterval),

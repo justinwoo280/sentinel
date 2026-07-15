@@ -22,7 +22,8 @@ import (
 // Config controls the mmdb download and update behaviour.
 type Config struct {
 	Enabled        bool          `yaml:"enabled"`
-	LicenseKey     string        `yaml:"license_key"`     // Maxmind license key (free)
+	AccountID      string        `yaml:"account_id"`      // Maxmind Account ID (used as Basic Auth username)
+	LicenseKey     string        `yaml:"license_key"`     // Maxmind license key (free, used as Basic Auth password)
 	DBPath         string        `yaml:"db_path"`         // local path to .mmdb
 	UpdateInterval time.Duration `yaml:"update_interval"` // check interval (default 24h)
 	DownloadURL    string        `yaml:"download_url"`    // optional override
@@ -38,7 +39,10 @@ func DefaultConfig() Config {
 }
 
 // maxmindDownloadURL is the official Maxmind GeoLite2-City download
-// endpoint (requires a free license key).
+// endpoint. Per https://dev.maxmind.com/geoip/updating-databases, this
+// endpoint requires HTTP Basic Authentication (Account ID as username,
+// License Key as password) — the old query-parameter form only works
+// on the deprecated geoip_download endpoint.
 const maxmindDownloadURL = "https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz"
 
 // DownloadResult holds the outcome of a download attempt.
@@ -53,9 +57,10 @@ type DownloadResult struct {
 // Download fetches the GeoLite2-City database, verifies it, extracts
 // the .mmdb file, and atomically installs it at cfg.DBPath.
 //
-// The download URL defaults to Maxmind's official endpoint with the
-// license key appended. If cfg.DownloadURL is set, it's used instead
-// (for mirrors or alternative sources).
+// The download URL defaults to Maxmind's official endpoint, authenticated
+// via HTTP Basic Auth (Account ID + License Key), as required by
+// https://dev.maxmind.com/geoip/updating-databases. If cfg.DownloadURL
+// is set, it's used instead (for mirrors or alternative sources).
 func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 	if cfg.DBPath == "" {
 		return nil, fmt.Errorf("geoip: db_path is required")
@@ -64,10 +69,10 @@ func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 	// Determine download URL.
 	dlURL := cfg.DownloadURL
 	if dlURL == "" {
-		if cfg.LicenseKey == "" {
-			return nil, fmt.Errorf("geoip: license_key is required (get a free key at https://www.maxmind.com/en/geolite2/signup)")
+		if cfg.AccountID == "" || cfg.LicenseKey == "" {
+			return nil, fmt.Errorf("geoip: account_id and license_key are required (find them at https://www.maxmind.com/en/accounts/current/license-key)")
 		}
-		dlURL = maxmindDownloadURL + "&license_key=" + cfg.LicenseKey
+		dlURL = maxmindDownloadURL
 	}
 
 	// 1. Download tar.gz to a temp file.
@@ -89,6 +94,12 @@ func Download(ctx context.Context, cfg Config) (*DownloadResult, error) {
 		return nil, fmt.Errorf("geoip: create request: %w", err)
 	}
 	req.Header.Set("User-Agent", "sentinel/geoip-updater")
+	if cfg.DownloadURL == "" {
+		// Official Maxmind endpoint requires HTTP Basic Auth
+		// (Account ID as username, License Key as password) — the
+		// key must never be passed as a URL query parameter.
+		req.SetBasicAuth(cfg.AccountID, cfg.LicenseKey)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

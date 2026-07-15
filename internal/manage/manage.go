@@ -487,29 +487,35 @@ func readKey(p *Panel, current string) string {
 	}
 }
 
-// editGeoIP manages the MaxMind GeoLite2 license key and related
-// settings. Without a key, the quality module's Info section (ASN,
-// organization, coordinates, etc.) falls back to the free IPinfo/ipapi
-// sources instead of the local mmdb database.
+// editGeoIP manages the MaxMind GeoLite2 account ID, license key, and
+// related settings. MaxMind's download API requires HTTP Basic Auth
+// using both the account ID and license key together; without them,
+// the quality module's Info section (ASN, organization, coordinates,
+// etc.) falls back to the free IPinfo/ipapi sources instead of the
+// local mmdb database.
 func (p *Panel) editGeoIP(g *config.GeoIPConfig) {
 	for {
 		fmt.Println("\n--- GeoIP (MaxMind GeoLite2) ---")
 		fmt.Printf(" 1. Enabled       [%v]\n", g.Enabled)
-		fmt.Printf(" 2. License key   [%s]\n", keySummary(g.LicenseKey))
-		fmt.Printf(" 3. DB path       [%s]\n", g.DBPath)
-		fmt.Printf(" 4. Update interval [%s]\n", time.Duration(g.UpdateInterval))
+		fmt.Printf(" 2. Account ID    [%s]\n", keySummary(g.AccountID))
+		fmt.Printf(" 3. License key   [%s]\n", keySummary(g.LicenseKey))
+		fmt.Printf(" 4. DB path       [%s]\n", g.DBPath)
+		fmt.Printf(" 5. Update interval [%s]\n", time.Duration(g.UpdateInterval))
 		fmt.Println(" 0. Back")
 		fmt.Println("Get a free key at: https://www.maxmind.com/en/geolite2/signup")
+		fmt.Println("Find your Account ID and License Key at: https://www.maxmind.com/en/accounts/current/license-key")
 		switch p.prompt("Field: ") {
 		case "1":
 			g.Enabled = p.promptBool("Enable GeoIP?", g.Enabled)
 		case "2":
-			g.LicenseKey = readKey(p, g.LicenseKey)
+			g.AccountID = readKey(p, g.AccountID)
 		case "3":
+			g.LicenseKey = readKey(p, g.LicenseKey)
+		case "4":
 			if v := p.prompt("DB path (blank=keep): "); v != "" {
 				g.DBPath = v
 			}
-		case "4":
+		case "5":
 			if d := p.promptDuration("Update interval (e.g. 24h)"); d > 0 {
 				g.UpdateInterval = config.Duration(d)
 			}
@@ -526,8 +532,8 @@ func geoIPSummary(g config.GeoIPConfig) string {
 	if !g.Enabled {
 		return "disabled"
 	}
-	if g.LicenseKey == "" {
-		return "enabled, no license key"
+	if g.AccountID == "" || g.LicenseKey == "" {
+		return "enabled, no account id/license key"
 	}
 	return "enabled, key set"
 }

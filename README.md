@@ -159,6 +159,38 @@ Manage everything else from the Telegram bot (`/start`).
 - **Uninstall** — stop + remove the service, optionally the config, data
   directory, and binary
 
+## GeoIP (MaxMind GeoLite2) database
+
+The agent downloads and refreshes a local MaxMind GeoLite2-City database
+(`internal/geoip`) to enrich the quality module's Info section (ASN,
+organization, coordinates) without depending on remote APIs.
+
+MaxMind's [current download endpoint](https://dev.maxmind.com/geoip/updating-databases)
+requires **HTTP Basic Authentication** using your **Account ID** as the
+username and **License Key** as the password — the old approach of
+appending `license_key` as a URL query parameter only works on the
+deprecated `geoip_download` endpoint and returns `401` on the new one.
+
+Configure both in `/etc/sentinel/agent.yaml` (or via `sentinel manage` →
+*Edit configuration* → *GeoIP (MaxMind)*):
+
+```yaml
+geoip:
+  enabled: true
+  account_id: ""    # MaxMind Account ID
+  license_key: ""   # MaxMind License Key
+  db_path: /var/lib/sentinel/GeoLite2-City.mmdb
+  update_interval: 24h
+```
+
+Find both values at
+[https://www.maxmind.com/en/accounts/current/license-key](https://www.maxmind.com/en/accounts/current/license-key)
+(sign up for a free GeoLite2 account at
+[https://www.maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup)
+if you don't have one). Both `account_id` and `license_key` must be set
+together — without them, GeoIP downloads are skipped and the quality
+module falls back to free IP-info sources.
+
 ## IP quality API keys
 
 The quality module aggregates many data sources. Several **free** sources always

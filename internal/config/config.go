@@ -100,6 +100,7 @@ type ScheduleConfig struct {
 // GeoIPConfig controls Maxmind mmdb download and updates.
 type GeoIPConfig struct {
 	Enabled        bool     `yaml:"enabled"`
+	AccountID      string   `yaml:"account_id"` // Maxmind Account ID (Basic Auth username)
 	LicenseKey     string   `yaml:"license_key"`
 	DBPath         string   `yaml:"db_path"`
 	UpdateInterval Duration `yaml:"update_interval"`
