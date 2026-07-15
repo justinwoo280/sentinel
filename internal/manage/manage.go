@@ -183,6 +183,7 @@ func (p *Panel) showStatus() {
 		fmt.Printf("Schedule: interval=%s jitter=%s\n",
 			time.Duration(cfg.Schedule.Interval), time.Duration(cfg.Schedule.Jitter))
 		fmt.Printf("OTA:      %v\n", cfg.Master.OTA)
+		fmt.Printf("GeoIP:    %s\n", geoIPSummary(cfg.GeoIP))
 	} else {
 		cfg, err := config.LoadMaster(masterCfgPath)
 		if err != nil {
@@ -294,6 +295,7 @@ func (p *Panel) editAgentConfig() {
 		fmt.Printf(" 7. Schedule interval [%s]\n", time.Duration(cfg.Schedule.Interval))
 		fmt.Printf(" 8. Bind IP         [%s]\n", cfg.Network.BindIP)
 		fmt.Printf(" 9. Quality API keys [%d set]\n", countSetKeys(cfg.Quality.APIKeys))
+		fmt.Printf("10. GeoIP (MaxMind) [%s]\n", geoIPSummary(cfg.GeoIP))
 		fmt.Println(" 0. Save and return")
 		switch p.prompt("Field: ") {
 		case "1":
@@ -316,6 +318,8 @@ func (p *Panel) editAgentConfig() {
 			cfg.Network.BindIP = p.prompt("Bind IP (empty for default route): ")
 		case "9":
 			p.editQualityKeys(&cfg.Quality.APIKeys)
+		case "10":
+			p.editGeoIP(&cfg.GeoIP)
 		case "0", "":
 			if err := config.SaveAgent(agentCfgPath, cfg); err != nil {
 				fmt.Printf("Save failed: %v\n", err)
@@ -481,6 +485,51 @@ func readKey(p *Panel, current string) string {
 	default:
 		return v
 	}
+}
+
+// editGeoIP manages the MaxMind GeoLite2 license key and related
+// settings. Without a key, the quality module's Info section (ASN,
+// organization, coordinates, etc.) falls back to the free IPinfo/ipapi
+// sources instead of the local mmdb database.
+func (p *Panel) editGeoIP(g *config.GeoIPConfig) {
+	for {
+		fmt.Println("\n--- GeoIP (MaxMind GeoLite2) ---")
+		fmt.Printf(" 1. Enabled       [%v]\n", g.Enabled)
+		fmt.Printf(" 2. License key   [%s]\n", keySummary(g.LicenseKey))
+		fmt.Printf(" 3. DB path       [%s]\n", g.DBPath)
+		fmt.Printf(" 4. Update interval [%s]\n", time.Duration(g.UpdateInterval))
+		fmt.Println(" 0. Back")
+		fmt.Println("Get a free key at: https://www.maxmind.com/en/geolite2/signup")
+		switch p.prompt("Field: ") {
+		case "1":
+			g.Enabled = p.promptBool("Enable GeoIP?", g.Enabled)
+		case "2":
+			g.LicenseKey = readKey(p, g.LicenseKey)
+		case "3":
+			if v := p.prompt("DB path (blank=keep): "); v != "" {
+				g.DBPath = v
+			}
+		case "4":
+			if d := p.promptDuration("Update interval (e.g. 24h)"); d > 0 {
+				g.UpdateInterval = config.Duration(d)
+			}
+		case "0", "":
+			return
+		default:
+			fmt.Println("Invalid field.")
+		}
+	}
+}
+
+// geoIPSummary renders a one-line GeoIP status for the config menu.
+func geoIPSummary(g config.GeoIPConfig) string {
+	if !g.Enabled {
+		return "disabled"
+	}
+	if g.LicenseKey == "" {
+		return "enabled, no license key"
+	}
+	return "enabled, key set"
 }
 
 // ---------------------------------------------------------------------------
